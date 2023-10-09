@@ -19,16 +19,10 @@ type item = {
   text: string;
 };
 
-const defaultItem: item = { checked: false, text: "New Item" };
-
 const ToDoList = () => {
-  const [items, changeItems] = useState<item[]>([
-    {
-      checked: false,
-      text: "New Item",
-    },
-  ]);
-  let defaultItem: item = { checked: false, text: "New Item" };
+  const defaultItem: item = { checked: false, text: "New Item" };
+
+  const [items, changeItems] = useState<item[]>([defaultItem]);
 
   const addItem = (e: GestureResponderEvent): void => {
     changeItems((items) => [...items, defaultItem]);
@@ -74,7 +68,7 @@ const ToDoList = () => {
                 onChangeText={(newText) =>
                   itemTextChange(items.indexOf(item), newText)
                 }
-                placeholder={item.text}
+                value={item.text}
                 placeholderTextColor={"black"}
                 style={{
                   textDecorationLine: item.checked ? "line-through" : "none",
