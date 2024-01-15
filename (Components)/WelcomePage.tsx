@@ -19,23 +19,13 @@ export const WelcomePage = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Welcome!</Text>
-
-      <Image style={{ width: 100, height: 100 }} source={staticImage} />
-
       <Text style={styles.welcome_paragraph}>
         This is your new <Text style={styles.outstand}>companion</Text> on your
         journey to <Text style={styles.outstand}>get organized</Text>, and
-        <Text style={styles.outstand}>stay organized</Text>!
+        <Text style={styles.outstand}> stay organized</Text>!
       </Text>
-      <Text
-        style={{
-          color: "#EF229D",
-          fontSize: 35,
-          padding: 4,
-        }}
-      >
-        Good Luck :)
-      </Text>
+
+      <Image style={{ width: 100, height: 100 }} source={staticImage} />
 
       <View style={styles.btn_area}>
         <Text style={styles.btn_title}>New To The App?</Text>
@@ -91,7 +81,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "#229def",
     width: "100%",
-    height: "20%",
+    height: "25%",
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
