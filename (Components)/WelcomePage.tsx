@@ -25,8 +25,6 @@ export const WelcomePage = () => {
         <Text style={styles.outstand}> stay organized</Text>!
       </Text>
 
-      <Image style={{ width: 100, height: 100 }} source={staticImage} />
-
       <View style={styles.btn_area}>
         <Text style={styles.btn_title}>New To The App?</Text>
         <Pressable
@@ -59,9 +57,8 @@ const styles = StyleSheet.create({
   heading: {
     fontFamily: "Helvetica",
     fontSize: 55,
-    color: "#229def",
+    color: "#1ea4fc",
     textAlign: "center",
-    padding: 5,
   },
 
   btn_area: {
@@ -81,7 +78,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "#229def",
     width: "100%",
-    height: "25%",
+    height: "35%",
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",

@@ -4,7 +4,7 @@ import ToDoList from "./(Components)/ToDoList";
 import { CheckBox } from "react-native-elements";
 import RegisterPage from "./(Components)/RegisterPage";
 import { WelcomePage } from "./(Components)/WelcomePage";
-import { NavigationContainer } from "@react-navigation/native";
+import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createStackNavigator } from "@react-navigation/stack";
 import SignInPage from "./(Components)/SignInPage";
@@ -19,9 +19,12 @@ export type RootStackParamList = {
 };
 const RootStack = createStackNavigator<RootStackParamList>();
 
+const navTheme = DefaultTheme;
+navTheme.colors.background = "#fafafa";
+
 export default function App() {
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navTheme}>
       <Stack.Navigator initialRouteName="Welcome">
         <Stack.Screen name="Welcome" component={WelcomePage} />
         <Stack.Screen name="Profile" component={ProfilePage} />
