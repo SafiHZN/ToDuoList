@@ -1,8 +1,22 @@
+import { validatePassword } from "firebase/auth";
 import React, { FC, ReactElement, useState } from "react";
 import { Button, StyleSheet, TextInput } from "react-native";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+
+const auth = getAuth();
+const isValidEmail = (email : string) : boolean => {
+  const emailRegex = new RegExp('^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$', 'g');
+  return emailRegex.test(email);
+}
+const isValidPassword = (password : string) : boolean => {
+  const passwordRegex = new RegExp('^[A-Za-z][A-Za-z0-9]{5,31}');
+  return passwordRegex.test(password);
+}
 
 const RegisterPage = () => {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
 
   return (
@@ -16,12 +30,39 @@ const RegisterPage = () => {
       />
       <TextInput
         style={styles.input}
+        value={email}
+        placeholder={"Email"}
+        onChangeText={(text) => setEmail(text)}
+        autoCapitalize={"none"}
+      />
+      <TextInput
+        style={styles.input}
+        value={phoneNumber}
+        placeholder={"Phone Number"}
+        onChangeText={(text) => setPhoneNumber(text)}
+        autoCapitalize={"none"}
+      />
+      <TextInput
+        style={styles.input}
         value={password}
         placeholder={"Password"}
         secureTextEntry
         onChangeText={(text) => setPassword(text)}
       />
-      <Button title={"Create Account"} onPress={() => {}} />
+      <Button title={"Create Account"} onPress={() => {
+        if(isValidEmail(email) && isValidPassword(password)){
+          createUserWithEmailAndPassword(auth, email, password).then((userCredential) => {
+          // Signed up 
+          const user = userCredential.user;
+          // ..
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            // ..
+          });
+        }
+      }} />
     </>
   );
 };
