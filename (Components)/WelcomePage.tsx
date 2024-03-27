@@ -12,17 +12,29 @@ import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
 
-const staticImage = require("../assets/favicon.png");
+const staticImage = require("../assets/icon.png");
 export const WelcomePage = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Welcome!</Text>
+
+      <Image style={{ width: 100, height: 100 }} source={staticImage} />
+
       <Text style={styles.welcome_paragraph}>
         This is your new <Text style={styles.outstand}>companion</Text> on your
         journey to <Text style={styles.outstand}>get organized</Text>, and
-        <Text style={styles.outstand}> stay organized</Text>!
+        <Text style={styles.outstand}>stay organized</Text>!
+      </Text>
+      <Text
+        style={{
+          color: "#EF229D",
+          fontSize: 35,
+          padding: 4,
+        }}
+      >
+        Good Luck :)
       </Text>
 
       <View style={styles.btn_area}>
@@ -48,17 +60,20 @@ export const WelcomePage = () => {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: "#ffffff",
     alignItems: "center",
     height: "100%",
     width: "100%",
     justifyContent: "space-evenly",
+    padding:"2%",
   },
 
   heading: {
     fontFamily: "Helvetica",
     fontSize: 55,
-    color: "#1ea4fc",
+    color: "#5bbcfc",
     textAlign: "center",
+    padding: 5,
   },
 
   btn_area: {
@@ -71,20 +86,17 @@ const styles = StyleSheet.create({
   },
 
   btn_title: {
-    color: "#229def",
+    color: "#5bbcfc",
     fontSize: 20,
   },
 
   button: {
-    backgroundColor: "#229def",
-    width: "100%",
-    height: "35%",
+    backgroundColor: "#5bbcfc",
+    width: "50%",
+    height: "25%",
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    position: "relative",
-    padding: 1,
-    margin: "5%",
   },
 
   button_text: {
@@ -102,6 +114,6 @@ const styles = StyleSheet.create({
   outstand: {
     fontWeight: "bold",
     fontSize: 35,
-    color: "#229def",
+    color: "#5bbcfc",
   },
 });

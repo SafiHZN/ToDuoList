@@ -1,12 +1,12 @@
 import React, { FC, ReactElement, useState } from "react";
-import { Button, StyleSheet, TextInput, View } from "react-native";
+import { Button, StyleSheet, TextInput } from "react-native";
 
 const SignInPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   return (
-    <View style={styles.container}>
+    <>
       <TextInput
         style={styles.input}
         value={username}
@@ -21,27 +21,16 @@ const SignInPage = () => {
         secureTextEntry
         onChangeText={(text) => setPassword(text)}
       />
-      <Button title={"Sign In"} onPress={() => {}} />
-    </View>
+      <Button title={"Create Account"} onPress={() => {}} />
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   input: {
-    padding: 15,
-    width: "90%",
-    height: 80,
-    fontSize: 35,
+    height: 40,
     marginBottom: 10,
-    borderRadius: 10,
-    backgroundColor: "#1ea4fc",
-  },
-
-  container: {
-    alignItems: "center",
-    height: "100%",
-    width: "100%",
-    justifyContent: "center",
+    backgroundColor: "#fff",
   },
 });
 
