@@ -27,15 +27,6 @@ export const WelcomePage = () => {
         journey to <Text style={styles.outstand}>get organized</Text>, and
         <Text style={styles.outstand}>stay organized</Text>!
       </Text>
-      <Text
-        style={{
-          color: "#EF229D",
-          fontSize: 35,
-          padding: 4,
-        }}
-      >
-        Good Luck :)
-      </Text>
 
       <View style={styles.btn_area}>
         <Text style={styles.btn_title}>New To The App?</Text>
@@ -65,7 +56,7 @@ const styles = StyleSheet.create({
     height: "100%",
     width: "100%",
     justifyContent: "space-evenly",
-    padding:"2%",
+    padding: "2%",
   },
 
   heading: {
