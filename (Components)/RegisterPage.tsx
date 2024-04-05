@@ -61,7 +61,7 @@ const RegisterPage = () => {
 const styles = StyleSheet.create({
   input: {
     height: 40,
-    marginBottom: 10,
+    margin: 10,
     backgroundColor: "#fff",
   },
 });

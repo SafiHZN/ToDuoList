@@ -21,7 +21,7 @@ const SignInPage = () => {
         secureTextEntry
         onChangeText={(text) => setPassword(text)}
       />
-      <Button title={"Create Account"} onPress={() => {}} />
+      <Button title={"Sign In"} onPress={() => {}} />
     </>
   );
 };
@@ -29,7 +29,7 @@ const SignInPage = () => {
 const styles = StyleSheet.create({
   input: {
     height: 40,
-    marginBottom: 10,
+    margin: 10,
     backgroundColor: "#fff",
   },
 });
