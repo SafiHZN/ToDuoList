@@ -12,7 +12,7 @@ import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
 
-const staticImage = require("../assets/icon.png");
+const staticImage = require("../assets/logo.png");
 export const WelcomePage = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -61,15 +61,16 @@ const styles = StyleSheet.create({
 
   heading: {
     fontFamily: "Helvetica",
-    fontSize: 55,
+    fontSize: 50,
     color: "#5bbcfc",
     textAlign: "center",
     padding: 5,
+    height: 60,
   },
 
   btn_area: {
     padding: 3,
-    margin: "3%",
+    margin: "5%",
     width: "90%",
     height: "20%",
     alignItems: "center",
@@ -83,16 +84,17 @@ const styles = StyleSheet.create({
 
   button: {
     backgroundColor: "#5bbcfc",
-    width: "50%",
-    height: "25%",
-    borderRadius: 20,
+    width: "75%",
+    height: "30%",
+    borderRadius: 25,
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 10,
   },
 
   button_text: {
     paddingLeft: "3%",
-    color: "#FFF8DC",
+    color: "#fdfdfd",
     fontFamily: "Arial",
     fontSize: 20,
   },

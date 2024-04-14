@@ -13,11 +13,27 @@ import {
 import Icon from "react-native-vector-icons/FontAwesome";
 import React, { ChangeEvent, useReducer, useRef, useState } from "react";
 import { Grid } from "@mui/material";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { APP } from "../firebaseConfig";
+
+const auth = getAuth(APP);
 
 type item = {
   checked: boolean;
   text: string;
 };
+
+// onAuthStateChanged(auth, (user) => {
+//   if (user) {
+//     // User is signed in, see docs for a list of available properties
+//     // https://firebase.google.com/docs/reference/js/auth.user
+//     const uid = user.uid;
+//     // ...
+//   } else {
+//     // User is signed out
+//     // ...
+//   }
+// });
 
 const ToDoList = () => {
   const defaultItem: item = { checked: false, text: "New Item" };
@@ -151,13 +167,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: "absolute",
     bottom: 0,
-    margin: "5%",
+    margin: "4%",
   },
 
   addItemButtonText: {
     color: "#FFF8DC",
     fontFamily: "Arial",
-    fontSize: 55,
+    fontSize: 45,
   },
 });
 
