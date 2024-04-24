@@ -18,9 +18,10 @@ export const WelcomePage = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Welcome!</Text>
-
-      <Image style={{ width: 100, height: 100 }} source={staticImage} />
+      <View style={styles.heading}>
+      <Image style={styles.img} source={staticImage} />
+      <Text style={styles.header}>Welcome !</Text>
+    </View>
 
       <Text style={styles.welcome_paragraph}>
         This is your new <Text style={styles.outstand}>companion</Text> on your
@@ -55,17 +56,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: "100%",
     width: "100%",
-    justifyContent: "space-evenly",
-    padding: "2%",
+    justifyContent: "flex-start",
+    padding: 2,
   },
 
   heading: {
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    width: "100%",
+    padding: 5,
+  },
+  img: {
+    width: 100,
+    height: 100,
+    marginTop: 15,
+    marginBottom: 5,
+  },
+  header: {
     fontFamily: "Helvetica",
-    fontSize: 50,
+    fontSize: 45,
     color: "#5bbcfc",
     textAlign: "center",
     padding: 5,
-    height: 60,
+    marginBottom: 30,
+    height: 75,
   },
 
   btn_area: {
@@ -102,6 +116,7 @@ const styles = StyleSheet.create({
   welcome_paragraph: {
     padding: 4,
     fontSize: 30,
+    marginBottom: 30,
   },
 
   outstand: {

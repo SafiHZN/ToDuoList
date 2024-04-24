@@ -14,14 +14,17 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import React, { ChangeEvent, useReducer, useRef, useState } from "react";
 import { Grid } from "@mui/material";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { APP } from "../firebaseConfig";
+import { collection, addDoc, doc, getDoc, updateDoc } from "firebase/firestore"; 
+import { APP} from "../firebaseConfig";
+import { getFirestore } from "firebase/firestore";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Props, RootStackParamList, item } from "../types";
 
-const auth = getAuth(APP);
 
-type item = {
-  checked: boolean;
-  text: string;
-};
+const AUTH = getAuth(APP);
+const DATABASE = getFirestore(APP);
+  
 
 // onAuthStateChanged(auth, (user) => {
 //   if (user) {
@@ -35,29 +38,57 @@ type item = {
 //   }
 // });
 
-const ToDoList = () => {
+const ToDoList = ({route, navigation}: Props) => {
+  // const navigation =
+  //   useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  
   const defaultItem: item = { checked: false, text: "New Item" };
+
+  const {id} = route.params;
+  
+  let initialList: item[] = [];
+  const docRef = doc(DATABASE, "users", id);
+  const getInnitial = async () => {
+    const querySnapshot = await getDoc(docRef);
+    if(querySnapshot.exists()){
+      initialList = querySnapshot.get("user_list");
+    } 
+  }
+  getInnitial();
 
   const [items, changeItems] = useState<item[]>([defaultItem]);
 
+  const updateUserList = async (list: item[]) => {
+    await updateDoc(docRef, {
+      user_list : [...list]
+    });
+  }
+
   const addItem = (e: GestureResponderEvent): void => {
     changeItems((items) => [...items, defaultItem]);
+    updateUserList([...items, defaultItem]);
   };
 
   function toggleCheck(index: number): void {
     items[index].checked = items[index].checked ? false : true;
     changeItems([...items]);
+    updateUserList([...items]);
   }
 
   const removeItem = (index: number): void => {
     let res = items.filter((item, i) => i != index);
     changeItems(res);
+    updateUserList(res);
     console.log(res);
   };
 
   const itemTextChange = (index: number, newText: string): void => {
     items[index].text = newText;
     changeItems([...items]);
+    updateUserList([...items]);
+    // if(newText == "" && (cursor off) ){
+    //   removeItem(index);
+    // }
   };
 
   return (
