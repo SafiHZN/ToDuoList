@@ -1,6 +1,6 @@
 import React, { FC, ReactElement, useState } from "react";
 import { Button, Pressable, StyleSheet, TextInput, View, Image } from "react-native";
-import { RootStackParamList } from "../App";
+import { RootStackParamList } from "../types";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";

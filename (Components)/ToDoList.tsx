@@ -46,17 +46,23 @@ const ToDoList = ({route, navigation}: Props) => {
 
   const {id} = route.params;
   
-  let initialList: item[] = [];
+  let initialList: item[] = [{ checked: false, text: "Item" }];
   const docRef = doc(DATABASE, "users", id);
-  const getInnitial = async () => {
+  const getInitial = async () => {
     const querySnapshot = await getDoc(docRef);
     if(querySnapshot.exists()){
       initialList = querySnapshot.get("user_list");
-    } 
+      console.log(querySnapshot.get("user_name"));
+    } else{
+      console.log("no such doc");
+      console.log(querySnapshot.data);
+    }
   }
-  getInnitial();
+  getInitial();
+  console.log(initialList);
+  console.log(id);
 
-  const [items, changeItems] = useState<item[]>([defaultItem]);
+  const [items, changeItems] = useState<item[]>(initialList);
 
   const updateUserList = async (list: item[]) => {
     await updateDoc(docRef, {

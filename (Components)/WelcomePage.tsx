@@ -10,7 +10,7 @@ import {
 import { Button } from "react-native-elements";
 import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../App";
+import { RootStackParamList } from "../types";
 
 const staticImage = require("../assets/logo.png");
 export const WelcomePage = () => {
