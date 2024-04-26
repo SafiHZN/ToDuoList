@@ -11,20 +11,27 @@ import {
   TextInputChangeEventData,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import React, { ChangeEvent, useReducer, useRef, useState } from "react";
+import React, {
+  ChangeEvent,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import { Grid } from "@mui/material";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { collection, addDoc, doc, getDoc, updateDoc } from "firebase/firestore"; 
-import { APP} from "../firebaseConfig";
+import { collection, addDoc, doc, getDoc, updateDoc } from "firebase/firestore";
+import { APP } from "../firebaseConfig";
 import { getFirestore } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
+import {
+  NativeStackNavigationProp,
+  NativeStackScreenProps,
+} from "@react-navigation/native-stack";
 import { Props, RootStackParamList, item } from "../types";
-
 
 const AUTH = getAuth(APP);
 const DATABASE = getFirestore(APP);
-  
 
 // onAuthStateChanged(auth, (user) => {
 //   if (user) {
@@ -38,60 +45,69 @@ const DATABASE = getFirestore(APP);
 //   }
 // });
 
-const ToDoList = ({route, navigation}: Props) => {
+const ToDoList = ({ route, navigation }: Props) => {
   // const navigation =
   //   useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  
+
   const defaultItem: item = { checked: false, text: "New Item" };
 
-  const {id} = route.params;
-  
-  let initialList: item[] = [{ checked: false, text: "Item" }];
+  const { id } = route.params;
+
+  let userList: item[] = [];
+  const [items, changeItems] = useState<item[]>(userList);
+  const hasPageRendered = useRef(false);
   const docRef = doc(DATABASE, "users", id);
-  const getInitial = async () => {
-    const querySnapshot = await getDoc(docRef);
-    if(querySnapshot.exists()){
-      initialList = querySnapshot.get("user_list");
-      console.log(querySnapshot.get("user_name"));
-    } else{
-      console.log("no such doc");
-      console.log(querySnapshot.data);
+
+  //list manager
+  useEffect(() => {
+    // Update list when items[] changes
+    if (hasPageRendered.current) {
+      const updateUserList = async (list: item[]) => {
+        await updateDoc(docRef, {
+          user_list: [...list],
+        });
+      };
+
+      updateUserList([...items]);
+    } else {
+      // Fetch the list initially
+      hasPageRendered.current = true;
+
+      const fetchUserList = async () => {
+        const querySnapshot = await getDoc(docRef);
+        if (querySnapshot.exists()) {
+          userList = querySnapshot.get("user_list");
+          console.log(userList);
+        } else {
+          console.log("no such doc");
+          console.log(querySnapshot.data());
+        }
+      };
+
+      fetchUserList().then(() => {
+        changeItems([...userList]);
+      });
     }
-  }
-  getInitial();
-  console.log(initialList);
-  console.log(id);
-
-  const [items, changeItems] = useState<item[]>(initialList);
-
-  const updateUserList = async (list: item[]) => {
-    await updateDoc(docRef, {
-      user_list : [...list]
-    });
-  }
+  }, [items]);
 
   const addItem = (e: GestureResponderEvent): void => {
     changeItems((items) => [...items, defaultItem]);
-    updateUserList([...items, defaultItem]);
   };
 
   function toggleCheck(index: number): void {
     items[index].checked = items[index].checked ? false : true;
     changeItems([...items]);
-    updateUserList([...items]);
   }
 
   const removeItem = (index: number): void => {
     let res = items.filter((item, i) => i != index);
     changeItems(res);
-    updateUserList(res);
     console.log(res);
   };
 
   const itemTextChange = (index: number, newText: string): void => {
     items[index].text = newText;
     changeItems([...items]);
-    updateUserList([...items]);
     // if(newText == "" && (cursor off) ){
     //   removeItem(index);
     // }
@@ -150,32 +166,8 @@ const ToDoList = ({route, navigation}: Props) => {
 };
 
 const styles = StyleSheet.create({
-  delete_btn: {
-    position: "absolute",
-    alignSelf: "flex-end",
-    margin: 3,
-  },
-
-  list_item: {
-    margin: 5,
-    padding: 10,
-    height: 44,
-    width: "95%",
-    position: "relative",
-    alignSelf: "flex-end",
-    alignItems: "flex-start",
-    justifyContent: "center",
-  },
-
-  items_list: {
-    alignSelf: "center",
-    width: "100%",
-    flex: 1,
-  },
-
   container: {
     alignItems: "center",
-    marginTop: "15%",
     height: "100%",
     width: "100%",
   },
@@ -185,7 +177,7 @@ const styles = StyleSheet.create({
     fontSize: 45,
     color: "#229def",
     textAlign: "center",
-    padding: "5%",
+    padding: 50,
   },
 
   // (to do list section)
@@ -211,6 +203,29 @@ const styles = StyleSheet.create({
     color: "#FFF8DC",
     fontFamily: "Arial",
     fontSize: 45,
+  },
+
+  delete_btn: {
+    position: "absolute",
+    alignSelf: "flex-end",
+    margin: 3,
+  },
+
+  list_item: {
+    margin: 5,
+    padding: 10,
+    height: 44,
+    width: "95%",
+    position: "relative",
+    alignSelf: "flex-end",
+    alignItems: "flex-start",
+    justifyContent: "center",
+  },
+
+  items_list: {
+    alignSelf: "center",
+    width: "100%",
+    flex: 1,
   },
 });
 

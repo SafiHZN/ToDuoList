@@ -1,19 +1,27 @@
 import React, { FC, ReactElement, useState } from "react";
-import { Button, Pressable, StyleSheet, TextInput, View, Image } from "react-native";
+import {
+  Button,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+  Image,
+} from "react-native";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { APP} from "../firebaseConfig";
+import { APP } from "../firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack";
+import {
+  NativeStackNavigationProp,
+  NativeStackScreenProps,
+} from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types";
 import { getFirestore } from "firebase/firestore";
 import { Text } from "react-native-elements";
-
 
 const AUTH = getAuth(APP);
 const DATABASE = getFirestore(APP);
 
 const SignInPage = () => {
-  
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -23,20 +31,20 @@ const SignInPage = () => {
   const [isError, setIsError] = useState(false);
 
   const showError = (errorMessage: string): void => {
-    setError( "* " + errorMessage + "!");
+    setError("* " + errorMessage + "!");
     setIsError(true);
-  }
+  };
 
   const staticImage = require("../assets/logo.png");
 
   return (
     <View style={styles.container}>
-    <View style={styles.heading}>
-      <Image style={styles.img} source={staticImage} />
-      <Text style={styles.header}>Sign In !</Text>
-    </View>
-  
-      <Text style={(isError ? styles.error_show : styles.error_hide)}>
+      <View style={styles.heading}>
+        <Image style={styles.img} source={staticImage} />
+        <Text style={styles.header}>Sign In !</Text>
+      </View>
+
+      <Text style={isError ? styles.error_show : styles.error_hide}>
         {error}
       </Text>
 
@@ -55,10 +63,6 @@ const SignInPage = () => {
         onChangeText={(text) => setPassword(text)}
       />
 
-      <Text style={styles.password_criteria}>
-        * Password must start with a letter and contain 6 - 32 characters
-      </Text>
-      
       <Pressable
         style={styles.button}
         onPress={() => {
@@ -69,7 +73,7 @@ const SignInPage = () => {
               const id = user.uid;
 
               //go to ToDoList
-              navigation.navigate("ToDo", {id}); // link user with and collection       ********
+              navigation.navigate("ToDo", { id }); // link user with and collection       ********
             })
             .catch((error) => {
               const errorCode = error.code;
@@ -136,7 +140,7 @@ const styles = StyleSheet.create({
     fontFamily: "Arial",
     fontSize: 23,
   },
-  
+
   error_show: {
     fontFamily: "Arial",
     color: "red",
@@ -148,13 +152,6 @@ const styles = StyleSheet.create({
     color: "rgba(0,0,0,0)",
     margin: 5,
   },
-
-  password_criteria: {
-    fontFamily: "Arial",
-    color: "#ffc03f",
-    fontSize: 15,
-    margin: 5,
-  }
 });
 
 export default SignInPage;

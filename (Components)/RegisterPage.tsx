@@ -1,5 +1,12 @@
 import React, { FC, ReactElement, useState } from "react";
-import { Button, Pressable, StyleSheet, TextInput, View, Image } from "react-native";
+import {
+  Button,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+  Image,
+} from "react-native";
 import { RootStackParamList } from "../types";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
@@ -8,7 +15,14 @@ import { APP } from "../firebaseConfig";
 import { Text } from "react-native-elements";
 import { error } from "console";
 import { text } from "stream/consumers";
-import { Firestore, addDoc, collection, doc, getFirestore, setDoc } from "firebase/firestore";
+import {
+  Firestore,
+  addDoc,
+  collection,
+  doc,
+  getFirestore,
+  setDoc,
+} from "firebase/firestore";
 
 type item = {
   checked: boolean;
@@ -19,23 +33,22 @@ const AUTH = getAuth(APP);
 const DATABASE = getFirestore(APP);
 
 const RegisterPage = () => {
-  
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   // const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isError, setIsError] = useState(false);
 
-
   const isValidEmail = (email: string): boolean => {
     const emailRegex = new RegExp("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$", "g");
-    const res =  emailRegex.test(email);
+    const res = emailRegex.test(email);
 
-    if(!res){
-      showError("Invalid Email")
+    if (!res) {
+      showError("Invalid Email");
     }
 
     return res;
@@ -43,29 +56,29 @@ const RegisterPage = () => {
   const isValidPassword = (password: string): boolean => {
     const passwordRegex = new RegExp("^[A-Za-z][A-Za-z0-9]{5,31}");
     const res = passwordRegex.test(password);
-  
-    if(!res){
-      showError("Invalid password")
+
+    if (!res) {
+      showError("Invalid password");
     }
 
     return res;
   };
 
   const showError = (errorMessage: string): void => {
-    setError( "* " + errorMessage + "!");
+    setError("* " + errorMessage + "!");
     setIsError(true);
-  }
+  };
 
   const staticImage = require("../assets/logo.png");
 
   return (
     <View style={styles.container}>
-    <View style={styles.heading}>
-      <Image style={styles.img} source={staticImage} />
-      <Text style={styles.header}>Register !</Text>
-    </View>
-      
-      <Text style={(isError ? styles.error_show : styles.error_hide)}>
+      <View style={styles.heading}>
+        <Image style={styles.img} source={staticImage} />
+        <Text style={styles.header}>Register !</Text>
+      </View>
+
+      <Text style={isError ? styles.error_show : styles.error_hide}>
         {error}
       </Text>
 
@@ -97,7 +110,14 @@ const RegisterPage = () => {
         secureTextEntry
         onChangeText={(text) => setPassword(text)}
       />
-      
+      <TextInput
+        style={styles.input}
+        value={confirmPassword}
+        placeholder={"Confirm Password"}
+        secureTextEntry
+        onChangeText={(text) => setConfirmPassword(text)}
+      />
+
       <Text style={styles.password_criteria}>
         * Password must start with a letter and contain 6 - 32 characters
       </Text>
@@ -105,7 +125,11 @@ const RegisterPage = () => {
       <Pressable
         style={styles.button}
         onPress={() => {
-          if (isValidEmail(email) && isValidPassword(password)) {
+          if (
+            isValidEmail(email) &&
+            isValidPassword(password) &&
+            password === confirmPassword
+          ) {
             createUserWithEmailAndPassword(AUTH, email, password)
               .then(async (userCredential) => {
                 // Signed up
@@ -113,16 +137,16 @@ const RegisterPage = () => {
                 const id = user.uid;
                 try {
                   await setDoc(doc(DATABASE, "users", id), {
-                      user_email: email,
-                      user_name: username,
-                      user_list: [{ checked: false, text: "New Item" }]
-                    });
+                    user_email: email,
+                    user_name: username,
+                    user_list: [{ checked: false, text: "New Item" }],
+                  });
                 } catch (e) {
                   console.error("Error adding document: ", e);
                 }
 
                 //go to ToDoList
-                navigation.navigate("ToDo", {id});
+                navigation.navigate("ToDo", { id });
               })
               .catch((error) => {
                 const errorCode = error.code;
@@ -208,7 +232,7 @@ const styles = StyleSheet.create({
     color: "#ffc03f",
     fontSize: 15,
     margin: 5,
-  }
+  },
 });
 
 export default RegisterPage;
