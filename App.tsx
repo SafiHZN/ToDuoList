@@ -16,7 +16,6 @@ import { RootStackParamList } from "./types";
 
 const Stack = createNativeStackNavigator();
 
-
 const RootStack = createStackNavigator<RootStackParamList>();
 
 const navTheme = DefaultTheme;
@@ -29,7 +28,12 @@ export default function App() {
         <RootStack.Screen name="Welcome" component={WelcomePage} />
         <RootStack.Screen name="Register" component={RegisterPage} />
         <RootStack.Screen name="SignIn" component={SignInPage} />
-        <RootStack.Screen name="ToDo" component={ToDoList} initialParams={{id: "TESTUSER"}} />
+        <RootStack.Screen
+          name="ToDo"
+          component={ToDoList}
+          initialParams={{ id: "TESTUSER" }}
+          options={{ headerShown: false }}
+        />
         <RootStack.Screen name="Profile" component={ProfilePage} />
       </RootStack.Navigator>
     </NavigationContainer>
