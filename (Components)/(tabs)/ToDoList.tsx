@@ -21,14 +21,14 @@ import React, {
 import { Grid } from "@mui/material";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { collection, addDoc, doc, getDoc, updateDoc } from "firebase/firestore";
-import { APP } from "../firebaseConfig";
+import { APP } from "../../firebaseConfig";
 import { getFirestore } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
 } from "@react-navigation/native-stack";
-import { Props, RootStackParamList, item } from "../types";
+import { Props, RootStackParamList, item } from "../../types";
 
 const AUTH = getAuth(APP);
 const DATABASE = getFirestore(APP);

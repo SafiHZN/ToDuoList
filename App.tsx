@@ -1,6 +1,5 @@
-import { StatusBar } from "expo-status-bar";
+import 'react-native-gesture-handler';
 import { StyleSheet, Text, View } from "react-native";
-import { CheckBox } from "react-native-elements";
 import RegisterPage from "./(Components)/RegisterPage";
 import SignInPage from "./(Components)/SignInPage";
 import ProfilePage from "./(Components)/ProfilePage";
@@ -11,10 +10,9 @@ import { createStackNavigator } from "@react-navigation/stack";
 import "expo-dev-client";
 import "react-native-gesture-handler";
 import { User } from "firebase/auth";
-import ToDoList from "./(Components)/ToDoList";
+import ToDoList from "./(Components)/(tabs)/ToDoList";
 import { RootStackParamList } from "./types";
-
-const Stack = createNativeStackNavigator();
+import Tabs from './(Components)/Tabs';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
@@ -30,7 +28,7 @@ export default function App() {
         <RootStack.Screen name="SignIn" component={SignInPage} />
         <RootStack.Screen
           name="ToDo"
-          component={ToDoList}
+          component={Tabs}
           initialParams={{ id: "TESTUSER" }}
           options={{ headerShown: false }}
         />
