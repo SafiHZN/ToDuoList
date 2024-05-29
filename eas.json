@@ -11,15 +11,33 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
-        "simulator": true
+        "simulator": true,
+        "image": "latest"
+      },
+      "android": {
+        "image": "latest"
       }
     },
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "ios": {
+        "image": "latest"
+      },
+      "android": {
+        "image": "latest"
+      }
+    }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+      "image": "latest"
+    },
+    "android": {
+      "image": "latest"
+    }
+  }
   }
 }
