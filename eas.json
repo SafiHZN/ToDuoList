@@ -31,13 +31,6 @@
     }
   },
   "submit": {
-    "production": {
-      "ios": {
-      "image": "latest"
-    },
-    "android": {
-      "image": "latest"
-    }
-  }
+    "production": {}
   }
 }
