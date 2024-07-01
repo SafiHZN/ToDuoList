@@ -188,8 +188,8 @@ const styles = StyleSheet.create({
 
   addItemButton: {
     backgroundColor: "#229def",
-    width: "90%",
-    height: "10%",
+    width: 235,
+    height: 65,
     borderRadius: 15,
     alignSelf: "center",
     alignItems: "center",
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   },
 
   addItemButtonText: {
-    color: "#FFF8DC",
+    color: "white",
     fontFamily: "Arial",
     fontSize: 45,
   },
