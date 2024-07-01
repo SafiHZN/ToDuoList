@@ -9,8 +9,6 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createStackNavigator } from "@react-navigation/stack";
 import "expo-dev-client";
 import "react-native-gesture-handler";
-import { User } from "firebase/auth";
-import ToDoList from "./(Components)/(tabs)/ToDoList";
 import { RootStackParamList } from "./types";
 import Tabs from './(Components)/Tabs';
 
