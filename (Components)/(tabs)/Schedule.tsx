@@ -1,10 +1,13 @@
-import { StyleSheet, Text, View, Modal, Pressable } from 'react-native'
+import { StyleSheet, Text, View, Modal, Pressable, FlatList } from 'react-native'
 import React, { useState } from 'react'
 import {Calendar} from "react-native-calendars"
 
 const Schedule = () => {
   const [showModal, setShowModal] = useState(false);
   const [date, setDate] = useState("Select Date");
+
+  // 0 ==> 00:00 - 00:59, 1 ==> 01:00 - 01:59, 2 ==> 02:00 - 02:59, 3 ==> 03:00 - 03:59, 4 ==> 04:00 - 04:59 ...
+  const data = [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}];
 
   return (
     <View style={styles.container}>
@@ -32,6 +35,29 @@ const Schedule = () => {
         hideExtraDays={true}
         />
       </Modal>
+
+      <FlatList
+      style={{width:"100%", paddingHorizontal: 35}}
+      data={data}
+      ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+      renderItem={({item, index}) => {
+        return (
+          <View style={
+            {
+              marginTop: 15,
+              minHeight: 75,
+              borderBottomColor: "black",
+              borderBottomWidth: 1,
+            }
+          }>
+            <Text style={{fontWeight: "300", fontFamily: "sans-serif", marginLeft: 15}}>{index}:00 - {index}:59</Text>
+            <View>
+              {/* display tasks */}
+            </View>
+          </View>
+        )}
+      }
+        />
     </View>
   )
 }
@@ -41,24 +67,26 @@ export default Schedule
 const styles = StyleSheet.create({
   container: {
     justifyContent:"flex-start",
-    alignItems: "center",
     height: "100%",
     width: "100%",
   },
   
   selectDate: {
-    backgroundColor: "#229def",
-    width: 175,
-    height: 40,
-    borderRadius: 10,
+    alignSelf: "flex-end",
     alignItems: "center",
     justifyContent: "center",
     bottom: 0,
     margin: 25,
+    marginRight: 35,
+    width: 175,
+    height: 40,
+    borderColor: "#229def",
+    borderRadius: 10,
+    borderWidth: 1,
   },
   selectDateText:{
-    color: "white",
-    fontFamily: "Arial",
+    color: "#229def",
+    fontFamily: "sans-serif",
     fontSize: 27,
   },
   calendar:{

@@ -5,10 +5,7 @@ import {
   Pressable,
   GestureResponderEvent,
   FlatList,
-  TouchableOpacity,
   TextInput,
-  NativeSyntheticEvent,
-  TextInputChangeEventData,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import React, {
@@ -115,7 +112,9 @@ const ToDoList = ({ route, navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>To-Do List</Text>
+      <Pressable style={styles.selectList} onPress={() => {}}>
+        <Text style={styles.selectListText}>Select List</Text>
+      </Pressable>
       <View style={styles.tdlSection}>
         <FlatList
           style={styles.items_list}
@@ -143,6 +142,7 @@ const ToDoList = ({ route, navigation }: Props) => {
                   textDecorationLine: item.checked ? "line-through" : "none",
                   position: "absolute",
                   fontSize: 30,
+                  fontFamily: "sans-serif",
                   marginLeft: "15%",
                 }}
               />
@@ -172,12 +172,24 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 
-  heading: {
-    fontFamily: "Helvetica",
-    fontSize: 45,
+  selectList: {
+    alignSelf: "flex-end",
+    alignItems: "center",
+    justifyContent: "center",
+    bottom: 0,
+    marginVertical: 40,
+    marginRight: 35,
+    width: 175,
+    height: 40,
+    borderColor: "#229def",
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+
+  selectListText: {
     color: "#229def",
-    textAlign: "center",
-    padding: 50,
+    fontFamily: "sans-serif",
+    fontSize: 27,
   },
 
   // (to do list section)
@@ -196,12 +208,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: "absolute",
     bottom: 0,
-    margin: "4%",
+    margin: 45,
   },
 
   addItemButtonText: {
     color: "white",
-    fontFamily: "Arial",
+    fontFamily: "sans-serif",
     fontSize: 45,
   },
 
@@ -224,6 +236,7 @@ const styles = StyleSheet.create({
 
   items_list: {
     alignSelf: "center",
+    maxHeight: 475,
     width: "100%",
     flex: 1,
   },
