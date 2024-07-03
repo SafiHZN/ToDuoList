@@ -15,4 +15,5 @@ export type Props = NativeStackScreenProps<RootStackParamList, 'ToDo'>;
 export type item = {
     checked: boolean;
     text: string;
+    date: Date | false;
   };

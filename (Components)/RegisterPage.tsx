@@ -139,7 +139,7 @@ const RegisterPage = () => {
                   await setDoc(doc(DATABASE, "users", id), {
                     user_email: email,
                     user_name: username,
-                    user_list: [{ checked: false, text: "New Item" }],
+                    user_list: [{ checked: false, text: "New Item", date: false }],
                   });
                 } catch (e) {
                   console.error("Error adding document: ", e);

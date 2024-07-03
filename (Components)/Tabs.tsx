@@ -9,7 +9,7 @@ export default function Tabs({ route, navigation }: Props) {
   return (
     <Tab.Navigator>
       <Tab.Screen name="ToDoList">{() => <ToDoList {...{route,navigation}}/>}</Tab.Screen>
-      <Tab.Screen name="Schedule" component={Schedule} />
+      <Tab.Screen name="Schedule">{() => <Schedule {...{route, navigation}}/>}</Tab.Screen>
     </Tab.Navigator>
   );
 }

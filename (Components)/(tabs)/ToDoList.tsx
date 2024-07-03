@@ -6,6 +6,7 @@ import {
   GestureResponderEvent,
   FlatList,
   TextInput,
+  Modal,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import React, {
@@ -15,17 +16,14 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Grid } from "@mui/material";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { collection, addDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { APP } from "../../firebaseConfig";
 import { getFirestore } from "firebase/firestore";
-import { useNavigation } from "@react-navigation/native";
 import {
-  NativeStackNavigationProp,
-  NativeStackScreenProps,
 } from "@react-navigation/native-stack";
-import { Props, RootStackParamList, item } from "../../types";
+import { Props, RootStackParamList, item } from "../../types";import DateTimePicker from '@react-native-community/datetimepicker';
+import RNDateTimePicker from "@react-native-community/datetimepicker";
 
 const AUTH = getAuth(APP);
 const DATABASE = getFirestore(APP);
@@ -43,10 +41,7 @@ const DATABASE = getFirestore(APP);
 // });
 
 const ToDoList = ({ route, navigation }: Props) => {
-  // const navigation =
-  //   useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-
-  const defaultItem: item = { checked: false, text: "New Item" };
+  const defaultItem: item = { checked: false, text: "New Item", date: false};
 
   const { id } = route.params;
 
@@ -54,6 +49,11 @@ const ToDoList = ({ route, navigation }: Props) => {
   const [items, changeItems] = useState<item[]>(userList);
   const hasPageRendered = useRef(false);
   const docRef = doc(DATABASE, "users", id);
+  
+  const [showModal, setShowModal] = useState(false);
+  const [selectedDate, setDate] = useState<Date>(new Date());
+
+  const [indexOfSelectedItem, setIndexOfSelectedItem] = useState(-1);
 
   //list manager
   useEffect(() => {
@@ -147,6 +147,15 @@ const ToDoList = ({ route, navigation }: Props) => {
                 }}
               />
               <Pressable
+                style={styles.add_date_btn}
+                onPress={(e) => {
+                  setIndexOfSelectedItem(items.indexOf(item));
+                  setShowModal(true);
+                }}
+              >
+                <Icon name="calendar" size={27} />
+              </Pressable>
+              <Pressable
                 style={styles.delete_btn}
                 onPress={(e) => {
                   removeItem(items.indexOf(item));
@@ -157,6 +166,24 @@ const ToDoList = ({ route, navigation }: Props) => {
             </View>
           )}
         />
+        <Modal visible={showModal} animationType='fade' style={
+        {
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100%",
+          height: "100%",
+        }
+      }>
+        <Text style={styles.dtpicker_info}>Pick the date & time you would like to set this task to</Text>
+        <RNDateTimePicker style={styles.dtpicker} value={selectedDate} display="default" mode="datetime" onChange={(e, date) => { if(date !== undefined) setDate(date) }}/>
+        <Pressable style={styles.confirm_date} onPress={() => {
+          items[indexOfSelectedItem].date = selectedDate;
+          changeItems([...items]);
+          setShowModal(false);
+          }}>
+          <Text style={styles.confirm_date_text}>Confirm</Text>
+        </Pressable>
+      </Modal>
         <Pressable style={styles.addItemButton} onPress={addItem}>
           <Text style={styles.addItemButtonText}>Add Item</Text>
         </Pressable>
@@ -222,6 +249,11 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     margin: 3,
   },
+  add_date_btn: {
+    position: "absolute",
+    alignSelf: "flex-end",
+    paddingRight: 50
+  },
 
   list_item: {
     margin: 5,
@@ -240,6 +272,45 @@ const styles = StyleSheet.create({
     width: "100%",
     flex: 1,
   },
+
+  calendar:{
+    borderRadius: 10,
+    marginHorizontal: 50,
+    marginVertical: 150
+  },
+
+  dtpicker: {
+    alignSelf: "center",
+    margin: 50
+  },
+
+  dtpicker_info:
+  {
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    margin: 25,
+    marginTop: 200,
+    padding: 25,
+    fontFamily: "sans-serif",
+    fontSize: 25,
+  },
+
+  confirm_date:{
+    backgroundColor: "#229def",
+    width: 165,
+    height: 45,
+    borderRadius: 15,
+    alignSelf: "center",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 45,
+  },
+
+  confirm_date_text:{
+    color: "white",
+    fontFamily: "sans-serif",
+    fontSize: 30,
+  }
 });
 
 export default ToDoList;
