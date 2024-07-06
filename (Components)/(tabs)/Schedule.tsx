@@ -8,7 +8,7 @@ import RNDateTimePicker from '@react-native-community/datetimepicker';
 
 const Schedule = ({ route, navigation }: Props) => {
   const [showModal, setShowModal] = useState(false);
-  const [selectedDate, setDate] = useState<Date | false>(new Date());
+  const [selectedDate, setDate] = useState<Date>(new Date());
 
   const { id } = route.params;
 
@@ -17,12 +17,12 @@ const Schedule = ({ route, navigation }: Props) => {
   let userList: item[] = [];
   const docRef = doc(DATABASE, "users", id);
 
+  console.log(userList.map(item => item.date.valueOf()));
   const setDataSelectedDate = () => {
-    if(selectedDate != false){
-      for(let i=0; i<24; i++){
-        data[i] = userList.filter(item => item.date != false && item.date.getFullYear() == selectedDate.getFullYear() && item.date.getMonth() == selectedDate.getMonth() && item.date.getDate() == selectedDate.getDate() && item.date.getHours() == i);
-        // CHECK HERE
-      }
+    for(let i=0; i<24; i++){
+      data[i] = userList.filter(item => item.date != false && item.date.valueOf() === selectedDate.valueOf());
+      
+      console.log(data[i]);
     }
   }
 
@@ -48,7 +48,7 @@ const Schedule = ({ route, navigation }: Props) => {
   return (
     <View style={styles.container}>
       <Pressable style={styles.selectDate} onPress={() => setShowModal(true)}>
-        <Text style={styles.selectDateText}>{selectedDate != false ? selectedDate.toLocaleDateString() : "Select Date"}</Text>
+        <Text style={styles.selectDateText}>{selectedDate.toLocaleDateString()}</Text>
 
       </Pressable>
       <Modal visible={showModal} animationType='fade' style={
@@ -60,7 +60,7 @@ const Schedule = ({ route, navigation }: Props) => {
         }
       }>
         <Text style={styles.dtpicker_info}>Select the date of the schedule to be displayed</Text>
-        <RNDateTimePicker style={styles.dtpicker} value={selectedDate != false ? selectedDate : new Date()} display="default" mode="date" onChange={(e, date) => { if(date !== undefined) setDate(date) }}/>
+        <RNDateTimePicker style={styles.dtpicker} value={selectedDate} display="default" mode="date" onChange={(e, date) => { if(date !== undefined) setDate(date) }}/>
         <Pressable style={styles.confirm_date} onPress={() => {
           setShowModal(false);
           }}>
