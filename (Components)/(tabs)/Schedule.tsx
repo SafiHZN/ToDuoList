@@ -20,7 +20,7 @@ const Schedule = ({ route, navigation }: Props) => {
   console.log(userList.map(item => item.date.valueOf()));
   const setDataSelectedDate = () => {
     for(let i=0; i<24; i++){
-      data[i] = userList.filter(item => item.date != false && item.date.valueOf() === selectedDate.valueOf());
+      data[i] = userList.filter(item => item.date != false && item.date.valueOf() >= selectedDate.valueOf());
       
       console.log(data[i]);
     }
