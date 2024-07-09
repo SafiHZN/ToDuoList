@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import ToDoList from './(tabs)/ToDoList';
 import Schedule  from './(tabs)/Schedule';
 import { Props } from '../types';
+import { lazy } from 'react';
 
 const Tab = createBottomTabNavigator();
 

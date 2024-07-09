@@ -17,6 +17,7 @@ import { error } from "console";
 import { text } from "stream/consumers";
 import {
   Firestore,
+  Timestamp,
   addDoc,
   collection,
   doc,
@@ -139,7 +140,7 @@ const RegisterPage = () => {
                   await setDoc(doc(DATABASE, "users", id), {
                     user_email: email,
                     user_name: username,
-                    user_list: [{ checked: false, text: "New Item", date: false }],
+                    user_list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false }],
                   });
                 } catch (e) {
                   console.error("Error adding document: ", e);

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, Modal, Pressable, FlatList } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import {Calendar} from "react-native-calendars"
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { Props, item } from '../../types';
 import { DATABASE } from '../../firebaseConfig';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
@@ -13,15 +13,16 @@ const Schedule = ({ route, navigation }: Props) => {
   const { id } = route.params;
 
   // 0 ==> 00:00 - 00:59, 1 ==> 01:00 - 01:59, 2 ==> 02:00 - 02:59, 3 ==> 03:00 - 03:59, 4 ==> 04:00 - 04:59 ...
-  let data: item[][] = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]];
+  const [data, setData] = useState<item[][]>([[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]);
   let userList: item[] = [];
   const docRef = doc(DATABASE, "users", id);
 
-  console.log(userList.map(item => item.date.valueOf()));
   const setDataSelectedDate = () => {
+    let nextDate = new Date(selectedDate);
+    nextDate.setDate(nextDate.getDate() + 1);
     for(let i=0; i<24; i++){
-      data[i] = userList.filter(item => item.date != false && item.date.valueOf() >= selectedDate.valueOf());
-      
+      data[i] = userList.filter(item => item.scheduled && item.date.toDate().toDateString() === selectedDate.toDateString());
+      setData(...[data]);
       console.log(data[i]);
     }
   }
@@ -37,13 +38,10 @@ const Schedule = ({ route, navigation }: Props) => {
       }
     };
 
-    fetchUserList();
-    setDataSelectedDate();
-  }, []);
-
-  useEffect(() => {
-    setDataSelectedDate();
-  }, [selectedDate])
+    fetchUserList().then(() => {
+      setDataSelectedDate();
+    });
+  }, [selectedDate]);
 
   return (
     <View style={styles.container}>
@@ -78,6 +76,7 @@ const Schedule = ({ route, navigation }: Props) => {
             {
               marginTop: 15,
               minHeight: 75,
+              height: "auto",
               borderBottomColor: "black",
               borderBottomWidth: 1,
             }
@@ -87,16 +86,14 @@ const Schedule = ({ route, navigation }: Props) => {
             <FlatList
           style={styles.items_list}
           data={data[index]}
-          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+          ItemSeparatorComponent={() => <View style={{ height: 2 }} />}
           renderItem={({ item }) => (
-            <View>
-              <Text style={{
-                  textDecorationLine: item.checked ? "line-through" : "none",
+            <View style={styles.list_item}>
+              <Text style={{textDecorationLine: item.checked ? "line-through" : "none",
                   position: "absolute",
-                  fontSize: 30,
+                  fontSize: 20,
                   fontFamily: "sans-serif",
-                  marginLeft: "15%",
-                }}>
+                  marginLeft: 30,}}>
                   {item.text}
                 </Text>
             </View>
@@ -133,11 +130,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
   },
+
   selectDateText:{
     color: "#229def",
     fontFamily: "sans-serif",
     fontSize: 27,
   },
+
   calendar:{
     borderRadius: 10,
     marginHorizontal: 50,
@@ -149,6 +148,18 @@ const styles = StyleSheet.create({
     maxHeight: 475,
     width: "100%",
     flex: 1,
+    marginVertical: 10,
+  },
+
+  list_item:{
+    marginHorizontal: 5,
+    paddingHorizontal: 10,
+    height: 30,
+    width: "95%",
+    position: "relative",
+    alignSelf: "flex-end",
+    alignItems: "flex-start",
+    justifyContent: "center",
   },
 
   dtpicker: {

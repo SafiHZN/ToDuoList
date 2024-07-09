@@ -17,7 +17,7 @@ import React, {
   useState,
 } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { collection, addDoc, doc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, updateDoc, Timestamp } from "firebase/firestore";
 import { APP } from "../../firebaseConfig";
 import { getFirestore } from "firebase/firestore";
 import {
@@ -41,7 +41,7 @@ const DATABASE = getFirestore(APP);
 // });
 
 const ToDoList = ({ route, navigation }: Props) => {
-  const defaultItem: item = { checked: false, text: "New Item", date: false};
+  const defaultItem: item = { checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false};
 
   const { id } = route.params;
 
@@ -74,8 +74,6 @@ const ToDoList = ({ route, navigation }: Props) => {
         const querySnapshot = await getDoc(docRef);
         if (querySnapshot.exists()) {
           userList = querySnapshot.get("user_list");
-          console.log(userList);
-        } else {
           console.log("no such doc");
           console.log(querySnapshot.data());
         }
@@ -177,7 +175,8 @@ const ToDoList = ({ route, navigation }: Props) => {
         <Text style={styles.dtpicker_info}>Pick the date & time you would like to set this task to</Text>
         <RNDateTimePicker style={styles.dtpicker} value={selectedDate} display="default" mode="datetime" onChange={(e, date) => { if(date !== undefined) setDate(date) }}/>
         <Pressable style={styles.confirm_date} onPress={() => {
-          items[indexOfSelectedItem].date = selectedDate;
+          items[indexOfSelectedItem].date = new Timestamp(selectedDate.getTime()/1000, 0);
+          items[indexOfSelectedItem].scheduled = true;
           changeItems([...items]);
           setShowModal(false);
           }}>
