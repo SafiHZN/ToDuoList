@@ -26,7 +26,7 @@ export const WelcomePage = () => {
       <Text style={styles.welcome_paragraph}>
         This is your new <Text style={styles.outstand}>companion</Text> on your
         journey to <Text style={styles.outstand}>get organized</Text>, and
-        <Text style={styles.outstand}> stay organized</Text>!
+        <Text style={styles.outstand}> stay organized!</Text>
       </Text>
 
       <View style={styles.btn_area}>

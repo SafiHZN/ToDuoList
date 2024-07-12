@@ -137,6 +137,7 @@ const ToDoList = ({ route, navigation }: Props) => {
                 value={item.text}
                 placeholderTextColor={"black"}
                 style={{
+                  width: 200,
                   textDecorationLine: item.checked ? "line-through" : "none",
                   position: "absolute",
                   fontSize: 30,

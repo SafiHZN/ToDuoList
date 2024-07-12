@@ -27,6 +27,7 @@
     "@types/react-native-table-component": "^1.2.5",
     "date-fns": "^3.6.0",
     "expo": "~51.0.9",
+    "expo-app-loading": "^2.1.1",
     "expo-dev-client": "^4.0.15",
     "expo-splash-screen": "~0.27.4",
     "expo-status-bar": "~1.12.1",
