@@ -23,12 +23,10 @@ const Schedule = ({ route, navigation }: Props) => {
     let nextDate = new Date(selectedDate);
     nextDate.setDate(nextDate.getDate() + 1);
     for(let i=0; i<24; i++){
-      data[i] = userList.filter(item => item.scheduled && item.date.toDate().toDateString() === selectedDate.toDateString() && item.date.toDate().getHours() == i);
+      data[i] = userList.filter(item => item.scheduled && item.date.toDate().toDateString() === selectedDate.toDateString() && item.date.toDate().getHours() == i && !item.checked);
       setData(...[data]);
       setIsDataUpdated(true);
     }
-    
-    console.log("updated");
   }
 
   useFocusEffect(
