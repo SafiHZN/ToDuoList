@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, Modal, Pressable, FlatList } from 'react-native
 import {useCallback, useEffect, useState } from 'react';
 import AppLoading from 'expo-app-loading';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
-import { Props, item } from '../../types';
+import { Props, item, userListObj } from '../../types';
 import { DATABASE } from '../../firebaseConfig';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect } from '@react-navigation/native';
@@ -16,14 +16,14 @@ const Schedule = ({ route, navigation }: Props) => {
   // 0 ==> 00:00 - 00:59, 1 ==> 01:00 - 01:59, 2 ==> 02:00 - 02:59, 3 ==> 03:00 - 03:59, 4 ==> 04:00 - 04:59 ...
   const [data, setData] = useState<item[][]>([[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]);
   const [isDataUpdated, setIsDataUpdated] = useState(false);
-  let userList: item[] = [];
+  const [currentList, setCurrentList] = useState<item[]>([]);
+  let currentListIndex = 0;
+  let userLists : userListObj[] = [];
   const docRef = doc(DATABASE, "users", id);
 
   const setDataSelectedDate = () => {
-    let nextDate = new Date(selectedDate);
-    nextDate.setDate(nextDate.getDate() + 1);
     for(let i=0; i<24; i++){
-      data[i] = userList.filter(item => item.scheduled && item.date.toDate().toDateString() === selectedDate.toDateString() && item.date.toDate().getHours() == i && !item.checked);
+      data[i] = currentList.filter(item => item.scheduled && item.date.toDate().toDateString() === selectedDate.toDateString() && item.date.toDate().getHours() == i && !item.checked);
       setData(...[data]);
       setIsDataUpdated(true);
     }
@@ -31,17 +31,25 @@ const Schedule = ({ route, navigation }: Props) => {
 
   useFocusEffect(
     useCallback(() => {
-      const fetchUserList = async () => {
+      const fetchUserLists = async () => {
         const querySnapshot = await getDoc(docRef);
         if (querySnapshot.exists()) {
-          userList = querySnapshot.get("user_list");
+          console.log(querySnapshot.get("user_lists"));
+          userLists = querySnapshot.get("user_lists");
+          if(userLists.length > 0){
+            if(!userLists[0].shared){
+              setCurrentList(userLists[0].list);
+            }else{
+              // handle list is shared(title == an id) and switch to that account(maybe change docref?)
+            }
+          }
         } else {
           console.log("no such doc");
           console.log(querySnapshot.data());
         }
       };
   
-      fetchUserList().then(() => {
+      fetchUserLists().then(() => {
         setDataSelectedDate();
       })
 
@@ -102,7 +110,7 @@ const Schedule = ({ route, navigation }: Props) => {
                     position: "absolute",
                     fontSize: 20,
                     fontFamily: "sans-serif",
-                    marginLeft: 30,}}>
+                    marginLeft: 15,}}>
                     {item.text}
                   </Text>
               </View>

@@ -6,10 +6,16 @@ export type RootStackParamList = {
   Register: undefined;
   SignIn: undefined;
   ToDo: {
-    id: string
+    id: string,
   };
   Profile: undefined
 };
+
+export type userListObj = {
+  title: string ,
+  shared: boolean,
+  list: item[],
+}
 
 export type Props = NativeStackScreenProps<RootStackParamList, 'ToDo'>;
 

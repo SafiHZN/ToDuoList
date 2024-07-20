@@ -22,7 +22,7 @@ import { APP } from "../../firebaseConfig";
 import { getFirestore } from "firebase/firestore";
 import {
 } from "@react-navigation/native-stack";
-import { Props, RootStackParamList, item } from "../../types";import DateTimePicker from '@react-native-community/datetimepicker';
+import { Props, RootStackParamList, item, userListObj } from "../../types";import DateTimePicker from '@react-native-community/datetimepicker';
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 
 const AUTH = getAuth(APP);
@@ -45,8 +45,9 @@ const ToDoList = ({ route, navigation }: Props) => {
 
   const { id } = route.params;
 
-  let userList: item[] = [];
-  const [items, changeItems] = useState<item[]>(userList);
+  let userLists : userListObj[] = [];
+  let currentListIndex = 0;
+  const [items, changeItems] = useState<item[]>([]);
   const hasPageRendered = useRef(false);
   const docRef = doc(DATABASE, "users", id);
   
@@ -59,29 +60,39 @@ const ToDoList = ({ route, navigation }: Props) => {
   useEffect(() => {
     // Update list when items[] changes
     if (hasPageRendered.current) {
-      const updateUserList = async (list: item[]) => {
+      const updateUserLists = async (itemsList: item[]) => {
+        if(userLists.length > currentListIndex){
+          userLists[currentListIndex].list = itemsList;
+        } else{
+          userLists.push({title: "To-Do", shared: false, list: itemsList});
+        }
         await updateDoc(docRef, {
-          user_list: [...list],
+          user_lists: [...userLists],
         });
       };
-
-      updateUserList([...items]);
+      updateUserLists([...items]);
     } else {
       // Fetch the list initially
       hasPageRendered.current = true;
 
-      const fetchUserList = async () => {
+      const fetchUserLists = async () => {
         const querySnapshot = await getDoc(docRef);
         if (querySnapshot.exists()) {
-          userList = querySnapshot.get("user_list");
+          userLists = querySnapshot.get("user_lists");
+          if(userLists.length > 0){
+            if(!userLists[0].shared){
+              changeItems(userLists[0].list);
+            }else{
+              // handle list is shared(title == an id) and switch to that account(maybe change docref?)
+            }
+          }
+        } else {
           console.log("no such doc");
           console.log(querySnapshot.data());
         }
       };
 
-      fetchUserList().then(() => {
-        changeItems([...userList]);
-      });
+      fetchUserLists();
     }
   }, [items]);
 
@@ -97,7 +108,6 @@ const ToDoList = ({ route, navigation }: Props) => {
   const removeItem = (index: number): void => {
     let res = items.filter((item, i) => i != index);
     changeItems(res);
-    console.log(res);
   };
 
   const itemTextChange = (index: number, newText: string): void => {
@@ -108,9 +118,15 @@ const ToDoList = ({ route, navigation }: Props) => {
     // }
   };
 
+  const selectList = (listName: string) => {
+    // do some stuff
+  }
+
   return (
     <View style={styles.container}>
-      <Pressable style={styles.selectList} onPress={() => {}}>
+      <Pressable style={styles.selectList} onPress={() => {
+        // dropdown menu and select a list
+      }}>
         <Text style={styles.selectListText}>Select List</Text>
       </Pressable>
       <View style={styles.tdlSection}>
