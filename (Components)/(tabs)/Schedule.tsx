@@ -6,6 +6,7 @@ import { Props, item, userListObj } from '../../types';
 import { DATABASE } from '../../firebaseConfig';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect } from '@react-navigation/native';
+import { SelectList } from 'react-native-dropdown-select-list'
 
 const Schedule = ({ route, navigation }: Props) => {
   const [showModal, setShowModal] = useState(false);
@@ -21,6 +22,8 @@ const Schedule = ({ route, navigation }: Props) => {
   let userLists : userListObj[] = [];
   const docRef = doc(DATABASE, "users", id);
 
+  const [userListsNames, setUserListsNames] = useState<string[]>([]);
+
   const setDataSelectedDate = () => {
     for(let i=0; i<24; i++){
       data[i] = currentList.filter(item => item.scheduled && item.date.toDate().toDateString() === selectedDate.toDateString() && item.date.toDate().getHours() == i && !item.checked);
@@ -29,20 +32,25 @@ const Schedule = ({ route, navigation }: Props) => {
     }
   }
 
+  const storeCurrListInItems = () => {
+    if(userLists.length > currentListIndex){
+      if(!userLists[currentListIndex].shared){
+        setCurrentList(userLists[currentListIndex].list);
+      }else{
+        // handle list is shared(title == an id) and switch to that account(maybe change docref?)
+      }
+    }
+  }
+
   useFocusEffect(
     useCallback(() => {
       const fetchUserLists = async () => {
         const querySnapshot = await getDoc(docRef);
         if (querySnapshot.exists()) {
-          console.log(querySnapshot.get("user_lists"));
           userLists = querySnapshot.get("user_lists");
-          if(userLists.length > 0){
-            if(!userLists[0].shared){
-              setCurrentList(userLists[0].list);
-            }else{
-              // handle list is shared(title == an id) and switch to that account(maybe change docref?)
-            }
-          }
+          storeCurrListInItems();
+          let temp = userLists.map(list => list.title);
+          setUserListsNames([...temp]);
         } else {
           console.log("no such doc");
           console.log(querySnapshot.data());
@@ -62,26 +70,57 @@ const Schedule = ({ route, navigation }: Props) => {
   if(isDataUpdated){
     return (
       <View style={styles.container}>
-        <Pressable style={styles.selectDate} onPress={() => setShowModal(true)}>
-          <Text style={styles.selectDateText}>{selectedDate.toLocaleDateString()}</Text>
 
-        </Pressable>
-        <Modal visible={showModal} animationType='fade' style={
-          {
-            justifyContent: "center",
-            alignItems: "center",
-            width: "100%",
-            height: "100%",
-          }
-        }>
-          <Text style={styles.dtpicker_info}>Select the date of the schedule to be displayed</Text>
-          <RNDateTimePicker style={styles.dtpicker} value={selectedDate} display="default" mode="date" onChange={(e, date) => { if(date !== undefined) setDate(date) }}/>
-          <Pressable style={styles.confirm_date} onPress={() => {
-            setShowModal(false);
-            }}>
-            <Text style={styles.confirm_date_text}>Confirm</Text>
+        <View style={{width: "100%", flexDirection: "row", marginHorizontal: 10}}>
+          <SelectList 
+          setSelected={(listName: string) => {
+            currentListIndex = userListsNames.indexOf(listName);
+            storeCurrListInItems();
+          }} 
+          data={userListsNames} 
+          save="value"
+          placeholder="Select List"
+          searchPlaceholder="Search"
+          boxStyles={styles.selectList}
+          inputStyles={styles.selectListText}
+          dropdownStyles={{
+            borderColor: "#229def",
+            padding: 10,
+            marginBottom: 40,
+            marginHorizontal: 15,
+          }}
+          dropdownItemStyles={{
+            borderBottomWidth: 1,
+            borderBottomColor: "#a0a0a0",
+          }}
+          dropdownTextStyles={{
+            color: "#229def",
+            fontFamily: "sans-serif",
+            fontSize: 20
+          }}
+        />
+        
+        <Pressable style={styles.selectDate} onPress={() => setShowModal(true)}>
+            <Text style={styles.selectDateText}>{selectedDate.toLocaleDateString()}</Text>
           </Pressable>
-        </Modal>
+          <Modal visible={showModal} animationType='fade' style={
+            {
+              justifyContent: "center",
+              alignItems: "center",
+              width: "100%",
+              height: "100%",
+            }
+          }>
+            <Text style={styles.dtpicker_info}>Select the date of the schedule to be displayed</Text>
+            <RNDateTimePicker style={styles.dtpicker} value={selectedDate} display="default" mode="date" onChange={(e, date) => { if(date !== undefined) setDate(date) }}/>
+            <Pressable style={styles.confirm_date} onPress={() => {
+              setShowModal(false);
+              }}>
+              <Text style={styles.confirm_date_text}>Confirm</Text>
+            </Pressable>
+          </Modal>
+      </View>
+
 
         <FlatList
         style={{width:"100%", paddingHorizontal: 35}}
@@ -146,14 +185,35 @@ const styles = StyleSheet.create({
     height: "100%",
     width: "100%",
   },
+
+  selectList: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 5,
+    paddingVertical: 2, 
+    marginVertical: 25,
+    marginHorizontal: 15,
+    bottom: 0,
+    width: 175,
+    height: 40,
+    borderColor: "#229def",
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+
+  selectListText: {
+    color: "#229def",
+    fontFamily: "sans-serif",
+    fontSize: 25,
+  },
+
   
   selectDate: {
-    alignSelf: "flex-end",
     alignItems: "center",
     justifyContent: "center",
     bottom: 0,
-    margin: 25,
-    marginRight: 35,
+    marginVertical: 25,
+    marginHorizontal: 15,
     width: 175,
     height: 40,
     borderColor: "#229def",

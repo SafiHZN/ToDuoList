@@ -24,6 +24,8 @@ import {
 } from "@react-navigation/native-stack";
 import { Props, RootStackParamList, item, userListObj } from "../../types";import DateTimePicker from '@react-native-community/datetimepicker';
 import RNDateTimePicker from "@react-native-community/datetimepicker";
+import { SelectList } from 'react-native-dropdown-select-list'
+
 
 const AUTH = getAuth(APP);
 const DATABASE = getFirestore(APP);
@@ -47,6 +49,7 @@ const ToDoList = ({ route, navigation }: Props) => {
 
   let userLists : userListObj[] = [];
   let currentListIndex = 0;
+
   const [items, changeItems] = useState<item[]>([]);
   const hasPageRendered = useRef(false);
   const docRef = doc(DATABASE, "users", id);
@@ -55,6 +58,8 @@ const ToDoList = ({ route, navigation }: Props) => {
   const [selectedDate, setDate] = useState<Date>(new Date());
 
   const [indexOfSelectedItem, setIndexOfSelectedItem] = useState(-1);
+
+  const [userListsNames, setUserListsNames] = useState<string[]>([]);
 
   //list manager
   useEffect(() => {
@@ -79,13 +84,9 @@ const ToDoList = ({ route, navigation }: Props) => {
         const querySnapshot = await getDoc(docRef);
         if (querySnapshot.exists()) {
           userLists = querySnapshot.get("user_lists");
-          if(userLists.length > 0){
-            if(!userLists[0].shared){
-              changeItems(userLists[0].list);
-            }else{
-              // handle list is shared(title == an id) and switch to that account(maybe change docref?)
-            }
-          }
+          storeCurrListInItems();
+          let temp = userLists.map(list => list.title);
+          setUserListsNames([...temp]);
         } else {
           console.log("no such doc");
           console.log(querySnapshot.data());
@@ -95,6 +96,16 @@ const ToDoList = ({ route, navigation }: Props) => {
       fetchUserLists();
     }
   }, [items]);
+
+  const storeCurrListInItems = () => {
+    if(userLists.length > currentListIndex){
+      if(!userLists[currentListIndex].shared){
+        changeItems(userLists[currentListIndex].list);
+      }else{
+        // handle list is shared(title == an id) and switch to that account(maybe change docref?)
+      }
+    }
+  }
 
   const addItem = (e: GestureResponderEvent): void => {
     changeItems((items) => [...items, defaultItem]);
@@ -124,11 +135,37 @@ const ToDoList = ({ route, navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.selectList} onPress={() => {
-        // dropdown menu and select a list
-      }}>
-        <Text style={styles.selectListText}>Select List</Text>
-      </Pressable>
+
+      {/* LIST SELECTION SECTION */}
+      <SelectList 
+        setSelected={(listName: string) => {
+          currentListIndex = userListsNames.indexOf(listName);
+          storeCurrListInItems();
+        }} 
+        data={userListsNames} 
+        save="value"
+        placeholder="Select List"
+        searchPlaceholder="Search"
+        boxStyles={styles.selectList}
+        inputStyles={styles.selectListText}
+        dropdownStyles={{
+          borderColor: "#229def",
+          width: 250,
+          padding: 10,
+          marginBottom: 40,
+        }}
+        dropdownItemStyles={{
+          borderBottomWidth: 1,
+          borderBottomColor: "#a0a0a0",
+        }}
+        dropdownTextStyles={{
+          color: "#229def",
+          fontFamily: "sans-serif",
+          fontSize: 27
+        }}
+      />
+
+      {/* LIST SECTION */}
       <View style={styles.tdlSection}>
         <FlatList
           style={styles.items_list}
@@ -181,6 +218,8 @@ const ToDoList = ({ route, navigation }: Props) => {
             </View>
           )}
         />
+
+        {/* CALENDAR MODAL SECTION */}
         <Modal visible={showModal} animationType='fade' style={
         {
           justifyContent: "center",
@@ -200,6 +239,8 @@ const ToDoList = ({ route, navigation }: Props) => {
           <Text style={styles.confirm_date_text}>Confirm</Text>
         </Pressable>
       </Modal>
+
+      {/* ADD ITEM SECTION */}
         <Pressable style={styles.addItemButton} onPress={addItem}>
           <Text style={styles.addItemButtonText}>Add Item</Text>
         </Pressable>
@@ -216,12 +257,13 @@ const styles = StyleSheet.create({
   },
 
   selectList: {
-    alignSelf: "flex-end",
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 5,
+    paddingVertical: 2, 
     bottom: 0,
-    marginVertical: 40,
-    marginRight: 35,
+    marginTop: 40,
+    marginBottom: 20,
     width: 175,
     height: 40,
     borderColor: "#229def",
@@ -232,7 +274,7 @@ const styles = StyleSheet.create({
   selectListText: {
     color: "#229def",
     fontFamily: "sans-serif",
-    fontSize: 27,
+    fontSize: 25,
   },
 
   // (to do list section)
