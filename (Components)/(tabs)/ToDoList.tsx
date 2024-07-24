@@ -47,8 +47,8 @@ const ToDoList = ({ route, navigation }: Props) => {
 
   const { id } = route.params;
 
-  let userLists : userListObj[] = [];
-  let currentListIndex = 0;
+  const [userLists, setUserLists] = useState<userListObj[]>([]);
+  const [currentListIndex, setCurrentListIndex] = useState(0);
 
   const [items, changeItems] = useState<item[]>([]);
   const hasPageRendered = useRef(false);
@@ -59,43 +59,62 @@ const ToDoList = ({ route, navigation }: Props) => {
 
   const [indexOfSelectedItem, setIndexOfSelectedItem] = useState(-1);
 
-  const [userListsNames, setUserListsNames] = useState<string[]>([]);
-
   //list manager
   useEffect(() => {
     // Update list when items[] changes
     if (hasPageRendered.current) {
-      const updateUserLists = async (itemsList: item[]) => {
-        if(userLists.length > currentListIndex){
-          userLists[currentListIndex].list = itemsList;
-        } else{
-          userLists.push({title: "To-Do", shared: false, list: itemsList});
-        }
-        await updateDoc(docRef, {
-          user_lists: [...userLists],
-        });
-      };
-      updateUserLists([...items]);
+      if(userLists.length > currentListIndex){
+        userLists[currentListIndex].list = items;
+        updateUserLists();
+      } else{
+        // index bug
+        console.log("index bug!");
+      }
     } else {
       // Fetch the list initially
-      hasPageRendered.current = true;
 
       const fetchUserLists = async () => {
         const querySnapshot = await getDoc(docRef);
         if (querySnapshot.exists()) {
-          userLists = querySnapshot.get("user_lists");
+          const tempList = querySnapshot.get("user_lists");
+          setUserLists(tempList.length > 0 ? tempList : [{title: "To-Do", list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false }], shared: false}]);
           storeCurrListInItems();
-          let temp = userLists.map(list => list.title);
-          setUserListsNames([...temp]);
         } else {
           console.log("no such doc");
           console.log(querySnapshot.data());
         }
       };
 
-      fetchUserLists();
+      fetchUserLists().then(() => 
+        hasPageRendered.current = true
+      );
     }
   }, [items]);
+
+  useEffect(() => {
+    if(userLists.length <= 0){
+      setUserLists([{title: "To-Do", list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false }], shared: false}]);
+    }
+
+    if(hasPageRendered){
+      updateUserLists();
+      if(userLists.length > 0){
+        setCurrentListIndex(userLists.length - 1)
+      }
+    }
+  }, [userLists]);
+
+  const updateUserLists = async () => {
+    await updateDoc(docRef, {
+      user_lists: userLists,
+    });
+  }
+  
+  useEffect(() => {
+    if(hasPageRendered){
+      storeCurrListInItems();
+    }
+  }, [currentListIndex]);
 
   const storeCurrListInItems = () => {
     if(userLists.length > currentListIndex){
@@ -104,6 +123,9 @@ const ToDoList = ({ route, navigation }: Props) => {
       }else{
         // handle list is shared(title == an id) and switch to that account(maybe change docref?)
       }
+    } else{
+      console.log(userLists.length);
+      console.log(currentListIndex);
     }
   }
 
@@ -130,40 +152,97 @@ const ToDoList = ({ route, navigation }: Props) => {
   };
 
   const selectList = (listName: string) => {
-    // do some stuff
+    setCurrentListIndex(userLists.findIndex(list => list.title == listName));
   }
+
+  
+  // create new list section
+  const [showTextInputModal, setShowTextInputModal] = useState(false);
+  const [inputText, setInputText] = useState('');
+
+  const handleAddList = () => {
+    setShowTextInputModal(true);
+  };
+  
+  const handleDeleteList = () => {
+    // do some stuff
+  };
+
+  const handleTextInputChange = (text: string) => {
+    setInputText(text);
+  };
+
+  const handleAddListConfirm = async () => {
+    if (inputText !== '') {
+      setUserLists([...userLists, {title: inputText, list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false }], shared: false}])
+      setShowTextInputModal(false);
+    } else{
+      alert('Please enter a name for your list');
+    }
+  };
+
 
   return (
     <View style={styles.container}>
 
       {/* LIST SELECTION SECTION */}
-      <SelectList 
-        setSelected={(listName: string) => {
-          currentListIndex = userListsNames.indexOf(listName);
-          storeCurrListInItems();
-        }} 
-        data={userListsNames} 
-        save="value"
-        placeholder="Select List"
-        searchPlaceholder="Search"
-        boxStyles={styles.selectList}
-        inputStyles={styles.selectListText}
-        dropdownStyles={{
-          borderColor: "#229def",
-          width: 250,
-          padding: 10,
-          marginBottom: 40,
-        }}
-        dropdownItemStyles={{
-          borderBottomWidth: 1,
-          borderBottomColor: "#a0a0a0",
-        }}
-        dropdownTextStyles={{
-          color: "#229def",
-          fontFamily: "sans-serif",
-          fontSize: 27
-        }}
-      />
+      <View style={{
+        flexDirection: 'row',
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "center"
+      }}>
+        <Pressable
+          onPress={handleAddList}
+          style={{
+            margin: 10,
+            marginTop: 31.5
+          }}
+        >
+          <Icon
+            name="plus"
+            size={27}
+            color="#229def"
+          />
+        </Pressable>
+        <SelectList 
+          setSelected={selectList} 
+          data={userLists.map(list => list.title)} 
+          save="value"
+          placeholder="Select List"
+          searchPlaceholder="Search"
+          boxStyles={styles.selectList}
+          inputStyles={styles.selectListText}
+          dropdownStyles={{
+            borderColor: "#229def",
+            width: 250,
+            padding: 10,
+            marginBottom: 40,
+          }}
+          dropdownItemStyles={{
+            borderBottomWidth: 1,
+            borderBottomColor: "#a0a0a0",
+          }}
+          dropdownTextStyles={{
+            color: "#229def",
+            fontFamily: "sans-serif",
+            fontSize: 27
+          }}
+        />
+        <Pressable
+          onPress={handleDeleteList}
+          style={{
+            margin: 10,
+            marginTop: 31.5
+          }}
+        >
+          <Icon
+            name="minus"
+            size={27}
+            color="#ef2233"
+          />
+        </Pressable>
+      </View>
 
       {/* LIST SECTION */}
       <View style={styles.tdlSection}>
@@ -245,6 +324,22 @@ const ToDoList = ({ route, navigation }: Props) => {
           <Text style={styles.addItemButtonText}>Add Item</Text>
         </Pressable>
       </View>
+
+      {/* NEW LIST MODAL SECTION */}
+      <Modal visible={showTextInputModal} animationType='fade'>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Enter the name of this new list:</Text>
+          <TextInput
+            style={styles.textInput}
+            value={inputText}
+            onChangeText={handleTextInputChange}
+            placeholder="List name"
+          />
+          <Pressable style={styles.confirmButton} onPress={handleAddListConfirm}>
+            <Text style={styles.confirmButtonText}>Add</Text>
+          </Pressable>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -368,7 +463,41 @@ const styles = StyleSheet.create({
     color: "white",
     fontFamily: "sans-serif",
     fontSize: 30,
-  }
+  },
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+
+  modalTitle: {
+    fontSize: 24,
+    marginBottom: 10,
+  },
+
+  textInput: {
+    height: 40,
+    borderColor: '#229def',
+    borderRadius: 4,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    fontSize: 18,
+  },
+
+  confirmButton: {
+    backgroundColor: '#229def',
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+
+  confirmButtonText: {
+    color: 'white',
+    fontSize: 18,
+  },
 });
 
 export default ToDoList;
