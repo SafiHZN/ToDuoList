@@ -17,28 +17,15 @@ const Schedule = ({ route, navigation }: Props) => {
   // 0 ==> 00:00 - 00:59, 1 ==> 01:00 - 01:59, 2 ==> 02:00 - 02:59, 3 ==> 03:00 - 03:59, 4 ==> 04:00 - 04:59 ...
   const [data, setData] = useState<item[][]>([[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]);
   const [isDataUpdated, setIsDataUpdated] = useState(false);
-  const [currentList, setCurrentList] = useState<item[]>([]);
-  let currentListIndex = 0;
-  let userLists : userListObj[] = [];
+  const [currentList, setCurrentList] = useState<userListObj>({title: "To-Do", list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false}], shared: false});
+  const [userLists, setUserLists] =  useState<userListObj[]>([]);
   const docRef = doc(DATABASE, "users", id);
-
-  const [userListsNames, setUserListsNames] = useState<string[]>([]);
 
   const setDataSelectedDate = () => {
     for(let i=0; i<24; i++){
-      data[i] = currentList.filter(item => item.scheduled && item.date.toDate().toDateString() === selectedDate.toDateString() && item.date.toDate().getHours() == i && !item.checked);
-      setData(...[data]);
+      data[i] = currentList.list.filter(item => item.scheduled && item.date.toDate().toDateString() === selectedDate.toDateString() && item.date.toDate().getHours() == i && !item.checked);
+      setData([...data]);
       setIsDataUpdated(true);
-    }
-  }
-
-  const storeCurrListInItems = () => {
-    if(userLists.length > currentListIndex){
-      if(!userLists[currentListIndex].shared){
-        setCurrentList(userLists[currentListIndex].list);
-      }else{
-        // handle list is shared(title == an id) and switch to that account(maybe change docref?)
-      }
     }
   }
 
@@ -47,10 +34,11 @@ const Schedule = ({ route, navigation }: Props) => {
       const fetchUserLists = async () => {
         const querySnapshot = await getDoc(docRef);
         if (querySnapshot.exists()) {
-          userLists = querySnapshot.get("user_lists");
-          storeCurrListInItems();
-          let temp = userLists.map(list => list.title);
-          setUserListsNames([...temp]);
+          const tempList = querySnapshot.get("user_lists");
+          if(tempList.length > 0){
+            setCurrentList(tempList[0]);
+          }
+          setUserLists([...tempList]);
         } else {
           console.log("no such doc");
           console.log(querySnapshot.data());
@@ -67,27 +55,35 @@ const Schedule = ({ route, navigation }: Props) => {
     }, [selectedDate])
   );
 
+  const selectList = (listName: string) => {
+    const tempList = userLists.find(list => list.title == listName);
+    if (tempList) {
+      if(!tempList.shared){
+        setCurrentList({...tempList});
+      } else{
+        // handle list is shared -> get list from firebase with the id in shared (shared: false | {id})
+      }
+    }
+  }
+
   if(isDataUpdated){
     return (
       <View style={styles.container}>
 
         <View style={{width: "100%", flexDirection: "row", marginHorizontal: 10}}>
-          <SelectList 
-          setSelected={(listName: string) => {
-            currentListIndex = userListsNames.indexOf(listName);
-            storeCurrListInItems();
-          }} 
-          data={userListsNames} 
+        <SelectList 
+          setSelected={selectList} 
+          data={userLists.map(list => list.title)} 
           save="value"
           placeholder="Select List"
-          searchPlaceholder="Search"
+          search={false}
           boxStyles={styles.selectList}
           inputStyles={styles.selectListText}
           dropdownStyles={{
             borderColor: "#229def",
+            width: 250,
             padding: 10,
             marginBottom: 40,
-            marginHorizontal: 15,
           }}
           dropdownItemStyles={{
             borderBottomWidth: 1,
@@ -96,7 +92,7 @@ const Schedule = ({ route, navigation }: Props) => {
           dropdownTextStyles={{
             color: "#229def",
             fontFamily: "sans-serif",
-            fontSize: 20
+            fontSize: 27
           }}
         />
         

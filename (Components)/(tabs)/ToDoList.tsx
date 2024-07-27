@@ -55,7 +55,7 @@ const ToDoList = ({ route, navigation }: Props) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setDate] = useState<Date>(new Date());
 
-  let indexOfSelectedItem = -1;
+  const [indexOfSelectedItem, setIndexOfSelectedItem] = useState(-1);
 
   //list manager
   useEffect(() => {
@@ -135,7 +135,11 @@ const ToDoList = ({ route, navigation }: Props) => {
   const selectList = (listName: string) => {
     const tempList = userLists.find(list => list.title == listName);
     if (tempList) {
-      setCurrentList({...tempList});
+      if(!tempList.shared){
+        setCurrentList({...tempList});
+      } else{
+        // handle list is shared -> get list from firebase with the id in shared (shared: false | {id})
+      }
     }
   }
 
@@ -270,7 +274,7 @@ const ToDoList = ({ route, navigation }: Props) => {
               <Pressable
                 style={styles.add_date_btn}
                 onPress={(e) => {
-                  indexOfSelectedItem = currentList.list.indexOf(item);
+                  setIndexOfSelectedItem(currentList.list.findIndex(value => value == item));
                   setShowModal(true);
                 }}
               >
