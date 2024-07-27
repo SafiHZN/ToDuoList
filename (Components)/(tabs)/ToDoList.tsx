@@ -48,24 +48,23 @@ const ToDoList = ({ route, navigation }: Props) => {
   const { id } = route.params;
 
   const [userLists, setUserLists] = useState<userListObj[]>([]);
-  const [currentListIndex, setCurrentListIndex] = useState(0);
-
-  const [items, changeItems] = useState<item[]>([]);
+  const [currentList, setCurrentList] = useState<userListObj>({title: "To-Do", list: [defaultItem], shared: false});
   const isDataFetched = useRef(false);
   const docRef = doc(DATABASE, "users", id);
   
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setDate] = useState<Date>(new Date());
 
-  const [indexOfSelectedItem, setIndexOfSelectedItem] = useState(-1);
+  let indexOfSelectedItem = -1;
 
   //list manager
   useEffect(() => {
-    // Update list when items[] changes
+    // Update list
     if (isDataFetched.current) {
-      if(userLists.length > currentListIndex){
-        userLists[currentListIndex].list = items;
-        updateUserLists();
+      const currListIndex = userLists.findIndex(value => value.title == currentList.title);
+      if(userLists.length > currListIndex){
+        userLists[currListIndex].list = currentList.list;
+        setUserLists([...userLists]);
       } else{
         // index bug
         console.log("index bug!");
@@ -73,10 +72,16 @@ const ToDoList = ({ route, navigation }: Props) => {
     } else {
       // Fetch the list initially
         const fetchUserLists = async () => {
+          isDataFetched.current = true;
           try {
             const querySnapshot = await getDoc(docRef);
             if (querySnapshot.exists()) {
-              setUserLists(() => querySnapshot.get('user_lists'));
+              const tempList = querySnapshot.get('user_lists');
+              if(tempList.length > 0){
+                setUserLists(() => [...tempList]);
+              } else{
+                setUserLists(() => [{title: "To-Do", list: [defaultItem], shared: false}]);
+              }
             } else {
               console.log("No such document");
             }
@@ -85,20 +90,12 @@ const ToDoList = ({ route, navigation }: Props) => {
           }
         };
       
-        fetchUserLists().then(() => {
-          storeCurrListInItems();
-          isDataFetched.current = true;
-          console.log("done");
-          console.log(userLists);
-        });
+        fetchUserLists();
     }
-  }, [items]);
+  }, [currentList]);
 
   useEffect(() => {
-    if(isDataFetched.current){
-      if(userLists.length <= 0){
-        setUserLists([{title: "To-Do", list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false }], shared: false}]);
-      }
+    if(isDataFetched.current && userLists.length > 0){
       updateUserLists();
     }
   }, [userLists]);
@@ -108,50 +105,38 @@ const ToDoList = ({ route, navigation }: Props) => {
       user_lists: userLists,
     });
   }
-  
-  useEffect(() => {
-    if(isDataFetched.current){
-      storeCurrListInItems();
-    }
-  }, [currentListIndex]);
-
-  const storeCurrListInItems = () => {
-    if(userLists.length > currentListIndex){
-      if(!userLists[currentListIndex].shared){
-        changeItems(userLists[currentListIndex].list);
-      }else{
-        // handle list is shared(title == an id) and switch to that account(maybe change docref?)
-      }
-    } else{
-      console.log(userLists.length);
-      console.log(currentListIndex);
-    }
-  }
 
   const addItem = (e: GestureResponderEvent): void => {
-    changeItems((items) => [...items, defaultItem]);
+    setCurrentList(currlist => {
+      const newList = [...currlist.list, defaultItem];
+      return { ...currlist, list: newList };
+    })
   };
 
   function toggleCheck(index: number): void {
-    items[index].checked = items[index].checked ? false : true;
-    changeItems([...items]);
+    currentList.list[index].checked = !currentList.list[index].checked;
+    setCurrentList(currentList);
   }
 
   const removeItem = (index: number): void => {
-    let res = items.filter((item, i) => i != index);
-    changeItems(res);
+    setCurrentList(currlist => {
+      return {...currlist, list: currentList.list.filter((item, i) => i != index)}
+    });
   };
 
   const itemTextChange = (index: number, newText: string): void => {
-    items[index].text = newText;
-    changeItems([...items]);
+    currentList.list[index].text = newText;
+    setCurrentList({...currentList});
     // if(newText == "" && (cursor off) ){
     //   removeItem(index);
     // }
   };
 
   const selectList = (listName: string) => {
-    setCurrentListIndex(userLists.findIndex(list => list.title == listName));
+    const tempList = userLists.find(list => list.title == listName);
+    if (tempList) {
+      setCurrentList({...tempList});
+    }
   }
 
   
@@ -164,7 +149,14 @@ const ToDoList = ({ route, navigation }: Props) => {
   };
   
   const handleDeleteList = () => {
-    // do some stuff
+    const currListIndex = userLists.findIndex(value => value.title == currentList.title);
+    if(userLists.length > 1 ){
+      userLists.splice(currListIndex, 1);
+      setUserLists([...userLists]);
+      setCurrentList(userLists[0]);
+    } else{
+      alert("You must have at least one list");
+    }
   };
 
   const handleTextInputChange = (text: string) => {
@@ -208,7 +200,7 @@ const ToDoList = ({ route, navigation }: Props) => {
           data={userLists.map(list => list.title)} 
           save="value"
           placeholder="Select List"
-          searchPlaceholder="Search"
+          search={false}
           boxStyles={styles.selectList}
           inputStyles={styles.selectListText}
           dropdownStyles={{
@@ -246,13 +238,13 @@ const ToDoList = ({ route, navigation }: Props) => {
       <View style={styles.tdlSection}>
         <FlatList
           style={styles.items_list}
-          data={items}
+          data={currentList.list}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           renderItem={({ item }) => (
             <View style={styles.list_item}>
               <Pressable
                 onPress={(e) => {
-                  toggleCheck(items.indexOf(item));
+                  toggleCheck(currentList.list.indexOf(item));
                 }}
               >
                 <Icon
@@ -262,7 +254,7 @@ const ToDoList = ({ route, navigation }: Props) => {
               </Pressable>
               <TextInput
                 onChangeText={(newText) =>
-                  itemTextChange(items.indexOf(item), newText)
+                  itemTextChange(currentList.list.indexOf(item), newText)
                 }
                 value={item.text}
                 placeholderTextColor={"black"}
@@ -278,7 +270,7 @@ const ToDoList = ({ route, navigation }: Props) => {
               <Pressable
                 style={styles.add_date_btn}
                 onPress={(e) => {
-                  setIndexOfSelectedItem(items.indexOf(item));
+                  indexOfSelectedItem = currentList.list.indexOf(item);
                   setShowModal(true);
                 }}
               >
@@ -287,7 +279,7 @@ const ToDoList = ({ route, navigation }: Props) => {
               <Pressable
                 style={styles.delete_btn}
                 onPress={(e) => {
-                  removeItem(items.indexOf(item));
+                  removeItem(currentList.list.indexOf(item));
                 }}
               >
                 <Icon name="trash" size={27} />
@@ -308,9 +300,9 @@ const ToDoList = ({ route, navigation }: Props) => {
         <Text style={styles.dtpicker_info}>Pick the date & time you would like to set this task to</Text>
         <RNDateTimePicker style={styles.dtpicker} value={selectedDate} display="default" mode="datetime" onChange={(e, date) => { if(date !== undefined) setDate(date) }}/>
         <Pressable style={styles.confirm_date} onPress={() => {
-          items[indexOfSelectedItem].date = new Timestamp(selectedDate.getTime()/1000, 0);
-          items[indexOfSelectedItem].scheduled = true;
-          changeItems([...items]);
+          currentList.list[indexOfSelectedItem].date = new Timestamp(selectedDate.getTime()/1000, 0);
+          currentList.list[indexOfSelectedItem].scheduled = true;
+          setCurrentList({...currentList});
           setShowModal(false);
           }}>
           <Text style={styles.confirm_date_text}>Confirm</Text>
