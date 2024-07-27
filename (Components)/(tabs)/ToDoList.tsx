@@ -51,7 +51,7 @@ const ToDoList = ({ route, navigation }: Props) => {
   const [currentListIndex, setCurrentListIndex] = useState(0);
 
   const [items, changeItems] = useState<item[]>([]);
-  const hasPageRendered = useRef(false);
+  const isDataFetched = useRef(false);
   const docRef = doc(DATABASE, "users", id);
   
   const [showModal, setShowModal] = useState(false);
@@ -62,7 +62,7 @@ const ToDoList = ({ route, navigation }: Props) => {
   //list manager
   useEffect(() => {
     // Update list when items[] changes
-    if (hasPageRendered.current) {
+    if (isDataFetched.current) {
       if(userLists.length > currentListIndex){
         userLists[currentListIndex].list = items;
         updateUserLists();
@@ -72,35 +72,34 @@ const ToDoList = ({ route, navigation }: Props) => {
       }
     } else {
       // Fetch the list initially
-
-      const fetchUserLists = async () => {
-        const querySnapshot = await getDoc(docRef);
-        if (querySnapshot.exists()) {
-          const tempList = querySnapshot.get("user_lists");
-          setUserLists(tempList.length > 0 ? tempList : [{title: "To-Do", list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false }], shared: false}]);
+        const fetchUserLists = async () => {
+          try {
+            const querySnapshot = await getDoc(docRef);
+            if (querySnapshot.exists()) {
+              setUserLists(() => querySnapshot.get('user_lists'));
+            } else {
+              console.log("No such document");
+            }
+          } catch (error) {
+            console.error("Error fetching user lists:", error);
+          }
+        };
+      
+        fetchUserLists().then(() => {
           storeCurrListInItems();
-        } else {
-          console.log("no such doc");
-          console.log(querySnapshot.data());
-        }
-      };
-
-      fetchUserLists().then(() => 
-        hasPageRendered.current = true
-      );
+          isDataFetched.current = true;
+          console.log("done");
+          console.log(userLists);
+        });
     }
   }, [items]);
 
   useEffect(() => {
-    if(userLists.length <= 0){
-      setUserLists([{title: "To-Do", list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false }], shared: false}]);
-    }
-
-    if(hasPageRendered){
-      updateUserLists();
-      if(userLists.length > 0){
-        setCurrentListIndex(userLists.length - 1)
+    if(isDataFetched.current){
+      if(userLists.length <= 0){
+        setUserLists([{title: "To-Do", list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false }], shared: false}]);
       }
+      updateUserLists();
     }
   }, [userLists]);
 
@@ -111,7 +110,7 @@ const ToDoList = ({ route, navigation }: Props) => {
   }
   
   useEffect(() => {
-    if(hasPageRendered){
+    if(isDataFetched.current){
       storeCurrListInItems();
     }
   }, [currentListIndex]);
@@ -181,10 +180,9 @@ const ToDoList = ({ route, navigation }: Props) => {
     }
   };
 
-
   return (
     <View style={styles.container}>
-
+    
       {/* LIST SELECTION SECTION */}
       <View style={{
         flexDirection: 'row',
@@ -243,7 +241,7 @@ const ToDoList = ({ route, navigation }: Props) => {
           />
         </Pressable>
       </View>
-
+        
       {/* LIST SECTION */}
       <View style={styles.tdlSection}>
         <FlatList
@@ -318,13 +316,13 @@ const ToDoList = ({ route, navigation }: Props) => {
           <Text style={styles.confirm_date_text}>Confirm</Text>
         </Pressable>
       </Modal>
-
+        
       {/* ADD ITEM SECTION */}
         <Pressable style={styles.addItemButton} onPress={addItem}>
           <Text style={styles.addItemButtonText}>Add Item</Text>
         </Pressable>
       </View>
-
+        
       {/* NEW LIST MODAL SECTION */}
       <Modal visible={showTextInputModal} animationType='fade'>
         <View style={styles.modalContainer}>
