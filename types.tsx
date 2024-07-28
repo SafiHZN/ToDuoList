@@ -13,7 +13,7 @@ export type RootStackParamList = {
 
 export type userListObj = {
   title: string ,
-  shared: boolean,
+  shared: false | string, // the string consists of {uid}-{listName}
   list: item[],
 }
 

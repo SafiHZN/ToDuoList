@@ -17,7 +17,7 @@ import React, {
   useState,
 } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { collection, addDoc, doc, getDoc, updateDoc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, updateDoc, Timestamp, DocumentReference, DocumentData, setDoc } from "firebase/firestore";
 import { APP } from "../../firebaseConfig";
 import { getFirestore } from "firebase/firestore";
 import {
@@ -55,20 +55,28 @@ const ToDoList = ({ route, navigation }: Props) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setDate] = useState<Date>(new Date());
 
+  const [isNewListShared, setIsNewListShared] = useState(false);
   const [indexOfSelectedItem, setIndexOfSelectedItem] = useState(-1);
 
   //list manager
   useEffect(() => {
     // Update list
     if (isDataFetched.current) {
-      const currListIndex = userLists.findIndex(value => value.title == currentList.title);
-      if(userLists.length > currListIndex){
-        userLists[currListIndex].list = currentList.list;
-        setUserLists([...userLists]);
-      } else{
-        // index bug
-        console.log("index bug!");
+      const updateList = async () => {
+        const currListIndex = userLists.findIndex(value => value.title == currentList.title);
+        if(userLists.length > currListIndex){
+          if(currentList.shared != false){
+            await setDoc(doc(DATABASE, "shared_lists", currentList.shared), currentList);
+          } 
+          userLists[currListIndex].list = currentList.list;
+          setUserLists([...userLists]);
+        } else{
+          // index bug
+          console.log("index bug!");
+        }
       }
+
+      updateList();
     } else {
       // Fetch the list initially
         const fetchUserLists = async () => {
@@ -78,7 +86,15 @@ const ToDoList = ({ route, navigation }: Props) => {
             if (querySnapshot.exists()) {
               const tempList = querySnapshot.get('user_lists');
               if(tempList.length > 0){
-                setUserLists(() => [...tempList]);
+                //manage shared
+                tempList.forEach(async (value: userListObj, index: number) => {
+                  userLists[index] = value;
+                  if(value.shared != false){
+                    const sharedList = await getDoc(doc(DATABASE, "shared_lists", value.shared));
+                    userLists[index].list = sharedList.get('list');
+                  }
+                });
+                setUserLists(() => [...userLists]);
               } else{
                 setUserLists(() => [{title: "To-Do", list: [defaultItem], shared: false}]);
               }
@@ -113,7 +129,7 @@ const ToDoList = ({ route, navigation }: Props) => {
     })
   };
 
-  function toggleCheck(index: number): void {
+  const toggleCheck = (index: number): void => {
     currentList.list[index].checked = !currentList.list[index].checked;
     setCurrentList(currentList);
   }
@@ -132,13 +148,16 @@ const ToDoList = ({ route, navigation }: Props) => {
     // }
   };
 
-  const selectList = (listName: string) => {
+  const selectList = async (listName: string) => {
     const tempList = userLists.find(list => list.title == listName);
     if (tempList) {
-      if(!tempList.shared){
-        setCurrentList({...tempList});
+      if(tempList.shared != false){
+        const sharedList = await getDoc(doc(DATABASE, "shared_lists", tempList.shared));
+        if(sharedList.exists()){
+          setCurrentList(sharedList.data() as userListObj);
+        }
       } else{
-        // handle list is shared -> get list from firebase with the id in shared (shared: false | {id})
+        setCurrentList({...tempList});
       }
     }
   }
@@ -169,7 +188,14 @@ const ToDoList = ({ route, navigation }: Props) => {
 
   const handleAddListConfirm = async () => {
     if (inputText !== '') {
-      setUserLists([...userLists, {title: inputText, list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false }], shared: false}])
+      let newListRef : DocumentReference<DocumentData, DocumentData>;
+      let defaultNewList : userListObj = {title: inputText, list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false }], shared: false};
+      if(isNewListShared){
+        newListRef = doc(collection(DATABASE, "shared_lists"));
+        defaultNewList.shared = newListRef.id;
+        await setDoc(newListRef, defaultNewList);
+      }
+      setUserLists([...userLists, defaultNewList]);
       setShowTextInputModal(false);
     } else{
       alert('Please enter a name for your list');
@@ -329,6 +355,17 @@ const ToDoList = ({ route, navigation }: Props) => {
             onChangeText={handleTextInputChange}
             placeholder="List name"
           />
+          <Pressable
+            onPress={(e) => {
+              setIsNewListShared(!isNewListShared);
+            }}
+          >
+            <Text>Shared</Text>
+            <Icon
+              name={isNewListShared ? "check-square-o" : "square-o"}
+              size={27}
+            />
+          </Pressable>
           <Pressable style={styles.confirmButton} onPress={handleAddListConfirm}>
             <Text style={styles.confirmButtonText}>Add</Text>
           </Pressable>
