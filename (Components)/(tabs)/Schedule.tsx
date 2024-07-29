@@ -32,16 +32,28 @@ const Schedule = ({ route, navigation }: Props) => {
   useFocusEffect(
     useCallback(() => {
       const fetchUserLists = async () => {
-        const querySnapshot = await getDoc(docRef);
-        if (querySnapshot.exists()) {
-          const tempList = querySnapshot.get("user_lists");
-          if(tempList.length > 0){
-            setCurrentList(tempList[0]);
+        try {
+          const querySnapshot = await getDoc(docRef);
+          if (querySnapshot.exists()) {
+            const tempList = querySnapshot.get('user_lists');
+            if(tempList.length > 0){
+              //manage shared
+              tempList.forEach(async (value: userListObj, index: number) => {
+                userLists[index] = value;
+                if(value.shared != false){
+                  const sharedList = await getDoc(doc(DATABASE, "shared_lists", value.shared));
+                  userLists[index].list = sharedList.get('list');
+                }
+              });
+              setUserLists(() => [...userLists]);
+            } else{
+              setUserLists(() => [{title: "To-Do", list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false}], shared: false}]);
+            }
+          } else {
+            console.log("No such document");
           }
-          setUserLists([...tempList]);
-        } else {
-          console.log("no such doc");
-          console.log(querySnapshot.data());
+        } catch (error) {
+          console.error("Error fetching user lists:", error);
         }
       };
   
@@ -55,13 +67,20 @@ const Schedule = ({ route, navigation }: Props) => {
     }, [selectedDate])
   );
 
-  const selectList = (listName: string) => {
+  useEffect(() => {
+    setDataSelectedDate();
+  }, [currentList])
+
+  const selectList = async (listName: string) => {
     const tempList = userLists.find(list => list.title == listName);
     if (tempList) {
-      if(!tempList.shared){
-        setCurrentList({...tempList});
+      if(tempList.shared != false){
+        const sharedList = await getDoc(doc(DATABASE, "shared_lists", tempList.shared));
+        if(sharedList.exists()){
+          setCurrentList(sharedList.data() as userListObj);
+        }
       } else{
-        // handle list is shared -> get list from firebase with the id in shared (shared: false | {id})
+        setCurrentList(tempList);
       }
     }
   }

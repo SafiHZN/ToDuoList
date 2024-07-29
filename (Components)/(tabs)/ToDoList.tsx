@@ -359,15 +359,21 @@ const ToDoList = ({ route, navigation }: Props) => {
             onPress={(e) => {
               setIsNewListShared(!isNewListShared);
             }}
+            style={styles.isSharedButton}
           >
-            <Text>Shared</Text>
-            <Icon
-              name={isNewListShared ? "check-square-o" : "square-o"}
-              size={27}
-            />
+          <Icon
+            name={isNewListShared ? "check-square-o" : "square-o"}
+            size={27}
+          />
+            <Text style={styles.isSharedButtonText}>Shared</Text>
           </Pressable>
           <Pressable style={styles.confirmButton} onPress={handleAddListConfirm}>
             <Text style={styles.confirmButtonText}>Add</Text>
+          </Pressable>
+          <Pressable style={styles.cancelButton} onPress={() => {
+            setShowTextInputModal(false);
+          }}>
+            <Text style={styles.cancelButtonText}>Cancel</Text>
           </Pressable>
         </View>
       </Modal>
@@ -521,14 +527,44 @@ const styles = StyleSheet.create({
   confirmButton: {
     backgroundColor: '#229def',
     padding: 10,
+    margin: 10,
+    marginTop: 5,
     borderRadius: 10,
-    marginTop: 20,
   },
 
   confirmButtonText: {
     color: 'white',
     fontSize: 18,
   },
+  
+  cancelButton: {
+    padding: 10,
+    margin: 10,
+    marginTop: 5,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#229def',
+  },
+
+  cancelButtonText: {
+    color: '#229def',
+    fontSize: 18,
+  },
+
+  isSharedButton: {
+    padding: 10,
+    margin: 10,
+    marginBottom: 5,
+    flexDirection: "row",
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  
+  isSharedButtonText: {
+    padding: 5,
+    fontSize: 18
+  }
 });
 
 export default ToDoList;
