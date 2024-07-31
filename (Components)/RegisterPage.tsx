@@ -140,6 +140,7 @@ const RegisterPage = () => {
                   await setDoc(doc(DATABASE, "users", id), {
                     user_email: email,
                     user_name: username,
+                    friends: [], //type: userPublic[]
                     // user lists
                     user_lists: [{title: "To-Do", shared: false, list : [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false }]}],
                   });

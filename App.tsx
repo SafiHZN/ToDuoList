@@ -2,7 +2,7 @@ import 'react-native-gesture-handler';
 import { StyleSheet, Text, View } from "react-native";
 import RegisterPage from "./(Components)/RegisterPage";
 import SignInPage from "./(Components)/SignInPage";
-import ProfilePage from "./(Components)/ProfilePage";
+import ProfilePage from "./(Components)/(tabs)/ProfilePage";
 import { WelcomePage } from "./(Components)/WelcomePage";
 import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -30,7 +30,6 @@ export default function App() {
           initialParams={{ id: "TESTUSER" }}
           options={{ headerShown: false }}
         />
-        <RootStack.Screen name="Profile" component={ProfilePage} />
       </RootStack.Navigator>
     </NavigationContainer>
   );

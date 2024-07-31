@@ -25,3 +25,9 @@ export type item = {
     date: Timestamp;
     scheduled: boolean,
   };
+
+export type userPublic = {
+  name: string,
+  email: string,
+  sharedLists: userListObj[]
+}
