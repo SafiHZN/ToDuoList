@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Props, userPublic } from "../../types";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { DATABASE } from "../../firebaseConfig";
 import { FlatList } from "react-native-gesture-handler";
 import { Icon } from "react-native-elements";
@@ -24,23 +24,32 @@ const ProfilePage = ({ route, navigation }: Props) => {
 
   
   useEffect(() => {
-    const fetchData = async () => {
-      const querySnapshot = await getDoc(docRef);
-      if (querySnapshot.exists()) {
-        let tempUserName = querySnapshot.get('user_name');
-        let tempUserEmail = querySnapshot.get('user_email');
-        let tempUserFriends = querySnapshot.get('friends');
-
-        setUser({ name: tempUserName, email: tempUserEmail, friends: tempUserFriends});
+    if(isDataFetched){
+      const updateData = async () => {
+        await setDoc(docRef, {friends: user.friends}, { merge: true});
       }
-      setIsDataFetched(true);
-    }
 
-    fetchData()
-  }, []);
+      updateData();
+    } else{
+      const fetchData = async () => {
+        const querySnapshot = await getDoc(docRef);
+        if (querySnapshot.exists()) {
+          let tempUserName = querySnapshot.get('user_name');
+          let tempUserEmail = querySnapshot.get('user_email');
+          let tempUserFriends = querySnapshot.get('friends');
+  
+          setUser({ name: tempUserName, email: tempUserEmail, friends: tempUserFriends});
+        }
+        setIsDataFetched(true);
+      }
+  
+      fetchData()
+    }
+  }, [user]);
 
   const handleAddFriend = (newFriend: userPublic) => {
-    // const updatedFriends = [...user.friends, newFriend];
+    const updatedFriends = [...user.friends, newFriend];
+    setUser({ ...user, friends: updatedFriends });
   }
 
 
@@ -62,8 +71,8 @@ const ProfilePage = ({ route, navigation }: Props) => {
             data={user.friends}
             renderItem={({ item }) => (
               <View style={styles.friendItem}>
-                <Icon name="dot" size={27} />
-                <Text style={styles.infoText}>{item.name}</Text>
+                <Icon name="circle" size={20} />
+                <Text style={styles.friendText}>{item.name}</Text>
               </View>
             )}
             />
@@ -128,7 +137,14 @@ const styles = StyleSheet.create({
 
   friendItem: {
     // friend item
+    alignItems: "center",
+    flexDirection: "row",
     marginHorizontal: 25,
     marginVertical: 10,
   },
+
+  friendText: {
+    fontSize: 20,
+    margin: 5
+  }
 });
