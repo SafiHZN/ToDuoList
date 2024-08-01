@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, Modal, Pressable, FlatList } from 'react-native
 import {useCallback, useEffect, useState } from 'react';
 import AppLoading from 'expo-app-loading';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
-import { Props, item, userListObj } from '../../types';
+import { Props, item, userListObj, userPublic } from '../../types';
 import { DATABASE } from '../../firebaseConfig';
 import RNDateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect } from '@react-navigation/native';
@@ -45,7 +45,19 @@ const Schedule = ({ route, navigation }: Props) => {
                   userLists[index].list = sharedList.get('list');
                 }
               });
-              setUserLists(() => [...userLists]);
+              let finalList = userLists;
+              const friends = querySnapshot.get('friends') as userPublic[];
+              if(friends){
+                const friendsLists = friends.map(friend => friend.sharedLists);
+                friendsLists.forEach(friendList => {
+                  friendList.forEach(async (sharedList) => {
+                    if(finalList.findIndex(list => list.title === sharedList.title) === -1){
+                      finalList.push(sharedList);
+                    }
+                  });
+                });
+              }
+              setUserLists(() => [...finalList]);
             } else{
               setUserLists(() => [{title: "To-Do", list: [{ checked: false, text: "New Item", date: new Timestamp(Date.now()/1000, 0), scheduled: false}], shared: false}]);
             }

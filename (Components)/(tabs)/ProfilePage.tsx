@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
-import { Props, userPublic } from "../../types";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { Props, userListObj, userPublic } from "../../types";
+import { collectionGroup, doc, getDoc, getDocs, query, setDoc, where } from "firebase/firestore";
 import { DATABASE } from "../../firebaseConfig";
 import { FlatList } from "react-native-gesture-handler";
 import { Icon } from "react-native-elements";
@@ -47,9 +47,26 @@ const ProfilePage = ({ route, navigation }: Props) => {
     }
   }, [user]);
 
-  const handleAddFriend = (newFriend: userPublic) => {
+  const handleAddFriend = async (newFriend: userPublic) => {
     const updatedFriends = [...user.friends, newFriend];
     setUser({ ...user, friends: updatedFriends });
+      const matches = query(collectionGroup(DATABASE, 'users'), where("user_name", "!=", user.name));
+      const querySnapshot = await getDocs(matches);
+      let tempRes: userPublic[];
+      if(querySnapshot.docs.length > 0){
+        tempRes = querySnapshot.docs.map(doc => {
+          const lists = doc.get('user_lists') as userListObj[]; // all lists
+          return {
+            name: doc.get('user_name'),
+            email: doc.get('user_email'),
+            sharedLists: lists.filter(list => list.shared != false)
+          } as userPublic
+        });
+
+        await setDoc(docRef, {friends: tempRes}, { merge: true});
+      } else{
+        console.log("no docs!");
+      }
   }
 
 

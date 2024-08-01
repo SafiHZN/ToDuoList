@@ -22,7 +22,7 @@ import { APP } from "../../firebaseConfig";
 import { getFirestore } from "firebase/firestore";
 import {
 } from "@react-navigation/native-stack";
-import { Props, RootStackParamList, item, userListObj } from "../../types";import DateTimePicker from '@react-native-community/datetimepicker';
+import { Props, RootStackParamList, item, userListObj, userPublic } from "../../types";import DateTimePicker from '@react-native-community/datetimepicker';
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { SelectList } from 'react-native-dropdown-select-list'
 
@@ -94,7 +94,19 @@ const ToDoList = ({ route, navigation }: Props) => {
                     userLists[index].list = sharedList.get('list');
                   }
                 });
-                setUserLists(() => [...userLists]);
+                let finalList = userLists;
+                const friends = querySnapshot.get('friends') as userPublic[];
+                if(friends){
+                  const friendsLists = friends.map(friend => friend.sharedLists);
+                  friendsLists.forEach(friendList => {
+                    friendList.forEach(async (sharedList) => {
+                      if(finalList.findIndex(list => list.title === sharedList.title) === -1){
+                        finalList.push(sharedList);
+                      }
+                    });
+                  });
+                }
+                setUserLists(() => [...finalList]);
               } else{
                 setUserLists(() => [{title: "To-Do", list: [defaultItem], shared: false}]);
               }
@@ -131,7 +143,7 @@ const ToDoList = ({ route, navigation }: Props) => {
 
   const toggleCheck = (index: number): void => {
     currentList.list[index].checked = !currentList.list[index].checked;
-    setCurrentList(currentList);
+    setCurrentList({...currentList});
   }
 
   const removeItem = (index: number): void => {

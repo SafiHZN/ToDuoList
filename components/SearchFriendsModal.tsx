@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Modal, View, Text, TextInput, FlatList, Pressable } from 'react-native';
 import { Icon } from 'react-native-elements';
-import { userPublic } from '../types';
+import { userListObj, userPublic } from '../types';
 import { doc, getDoc,  collectionGroup, query, where, getDocs } from "firebase/firestore";  
 import { DATABASE } from '../firebaseConfig';
 
@@ -33,12 +33,13 @@ const SearchForFriendsModal: React.FC<SearchForFriendsModalProps> = ({
       const querySnapshot = await getDocs(matches);
       if(querySnapshot.docs.length > 0){
         const tempRes = querySnapshot.docs.map(doc => {
+          const lists = doc.get('user_lists') as userListObj[]; // all lists
           return {
             name: doc.get('user_name'),
-            email: doc.get('user_email')
+            email: doc.get('user_email'),
+            sharedLists: lists.filter(list => list.shared != false)
           } as userPublic
         });
-        console.log(tempRes);
         setSearchResults(tempRes); 
       } else{
         setSearchResults([]);
